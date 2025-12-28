@@ -32,15 +32,8 @@ const formSchema = z.object({
 
 
 async function generatePdfFromHtml(htmlContent: string): Promise<Buffer> {
-  // This function now just returns the HTML content as a buffer,
-  // as the AI will generate the full content for us.
-  // We will rely on the AI to produce a valid PDF representation in the future.
-  // For now, we pass the HTML to be converted by an external library.
-  // This is a placeholder for a more robust solution.
+  // The AI will provide the actual content.
   try {
-    // In a real scenario, you would use a library here to convert HTML to PDF.
-    // Since we're removing puppeteer and html-pdf-node, we'll return a placeholder.
-    // The AI will provide the actual content.
     return Buffer.from(htmlContent, 'utf-8');
   } catch (error) {
     console.error('Error in generatePdfFromHtml:', error);
@@ -50,7 +43,7 @@ async function generatePdfFromHtml(htmlContent: string): Promise<Buffer> {
 
 
 export async function submitApplication(values: z.infer<typeof formSchema>) {
-  const validationResult = formSchema.passthrough().safeParse(values);
+  const validationResult = formSchema.safeParse(values);
 
   if (!validationResult.success) {
     console.error('Validation failed:', validationResult.error.flatten().fieldErrors);
@@ -69,6 +62,8 @@ export async function submitApplication(values: z.infer<typeof formSchema>) {
     id: trackingId,
     status: ApplicationStatus.Submitted,
     createdAt: serverTimestamp(),
+    insuranceCopy: validatedData.insuranceCopy || '',
+    factoringDocuments: validatedData.factoringDocuments || '',
   };
 
   try {
