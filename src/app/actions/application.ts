@@ -33,36 +33,15 @@ const formSchema = z.object({
 
 
 async function generatePdfFromHtml(htmlContent: string): Promise<Buffer> {
-  let browser = null;
-  try {
-    // Launch a new browser instance with minimal arguments for a serverless environment
-    browser = await puppeteer.launch({
-      headless: true,
-      args: [
-        '--no-sandbox',
-        '--disable-setuid-sandbox',
-        '--disable-dev-shm-usage',
-        '--disable-accelerated-2d-canvas',
-        '--no-first-run',
-        '--no-zygote',
-        '--single-process', // This is crucial for some environments
-        '--disable-gpu',
-      ],
-    });
-
-    const page = await browser.newPage();
-    await page.setContent(htmlContent, { waitUntil: 'networkidle0' });
-    const pdfBuffer = await page.pdf({ format: 'A4', printBackground: true });
-    return pdfBuffer;
-  } catch (error: any) {
-    console.error('Error generating PDF with Puppeteer:', error);
-    // Throw a more detailed error to help with debugging
-    throw new Error(`Could not generate PDF. Puppeteer error: ${error.message}`);
-  } finally {
-    if (browser) {
-      await browser.close();
-    }
-  }
+  const browser = await puppeteer.launch({
+    headless: true,
+    args: ['--no-sandbox', '--disable-setuid-sandbox'],
+  });
+  const page = await browser.newPage();
+  await page.setContent(htmlContent, { waitUntil: 'networkidle0' });
+  const pdfBuffer = await page.pdf({ format: 'A4' });
+  await browser.close();
+  return pdfBuffer;
 }
 
 
