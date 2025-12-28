@@ -12,18 +12,16 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { useToast } from "@/hooks/use-toast";
-import { useTransition } from "react";
-import { Loader2 } from "lucide-react";
+import { useToast } from "@/components/ui/use-toast";
+import { useTransition, useState } from "react";
+import { ArrowRight, Loader2 } from "lucide-react";
 import { submitApplication } from "@/app/actions/application";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { format } from "date-fns";
+
 
 const formSchema = z.object({
-  firstName: z.string().min(2, "First name must be at least 2 characters."),
-  lastName: z.string().min(2, "Last name must be at least 2 characters."),
-  email: z.string().email("Please enter a valid email address."),
-  phone: z.string().min(10, "Please enter a valid phone number."),
-  address: z.string().min(5, "Please enter a valid address."),
+  companyName: z.string({ required_error: "Please select a company." }),
 });
 
 type ApplicationFormValues = z.infer<typeof formSchema>;
@@ -31,101 +29,62 @@ type ApplicationFormValues = z.infer<typeof formSchema>;
 export default function ApplicationForm() {
   const { toast } = useToast();
   const [isPending, startTransition] = useTransition();
+  const [selectedCompany, setSelectedCompany] = useState<string>("");
 
   const form = useForm<ApplicationFormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      firstName: "",
-      lastName: "",
-      email: "",
-      phone: "",
-      address: "",
+      companyName: "",
     },
   });
 
   const onSubmit = (values: ApplicationFormValues) => {
-    startTransition(async () => {
-      const result = await submitApplication(values);
-      if (result.error) {
-        toast({
-          title: "Submission Failed",
-          description: result.error,
-          variant: "destructive",
-        });
-      }
-    });
+    console.log("Form submitted (but not really)");
+    // This is where you would handle the multi-step form logic.
+    // For now, we are just showing the first step.
   };
+  
+  const today = new Date();
 
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-        <div className="grid md:grid-cols-2 gap-8">
-          <FormField
-            control={form.control}
-            name="firstName"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>First Name</FormLabel>
+        <FormField
+          control={form.control}
+          name="companyName"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel className="font-bold">Dispatch Company Name:</FormLabel>
+              <Select onValueChange={(value) => {
+                field.onChange(value);
+                setSelectedCompany(value);
+              }} defaultValue={field.value}>
                 <FormControl>
-                  <Input placeholder="John" {...field} />
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select a company" />
+                  </SelectTrigger>
                 </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <FormField
-            control={form.control}
-            name="lastName"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Last Name</FormLabel>
-                <FormControl>
-                  <Input placeholder="Doe" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        </div>
-        <FormField
-          control={form.control}
-          name="email"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Email Address</FormLabel>
-              <FormControl>
-                <Input type="email" placeholder="john.doe@example.com" {...field} />
-              </FormControl>
+                <SelectContent>
+                  <SelectItem value="North Star Shipping LLC">North Star Shipping LLC</SelectItem>
+                  <SelectItem value="South Pole Logistics">South Pole Logistics</SelectItem>
+                  <SelectItem value="East Horizon Transport">East Horizon Transport</SelectItem>
+                  <SelectItem value="West Wind Haulers">West Wind Haulers</SelectItem>
+                </SelectContent>
+              </Select>
+              <p className="text-sm text-muted-foreground pt-1">(Hereinafter referred to as the {selectedCompany || "selected company"})</p>
               <FormMessage />
             </FormItem>
           )}
         />
-        <FormField
-          control={form.control}
-          name="phone"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Phone Number</FormLabel>
-              <FormControl>
-                <Input placeholder="(123) 456-7890" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <FormField
-          control={form.control}
-          name="address"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Full Address</FormLabel>
-              <FormControl>
-                <Input placeholder="123 Main St, Anytown, USA" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+
+        {selectedCompany && (
+          <div className="space-y-4 rounded-lg bg-gray-50 p-4 border">
+            <h3 className="font-bold">Dispatch/Service Provider Representative</h3>
+            <p className="text-sm">{selectedCompany}</p>
+            <p className="text-sm">Date: {format(today, "yyyy-MM-dd")}</p>
+          </div>
+        )}
+
         <div className="flex justify-end">
           <Button type="submit" size="lg" disabled={isPending}>
             {isPending ? (
@@ -134,7 +93,10 @@ export default function ApplicationForm() {
                 Submitting...
               </>
             ) : (
-              "Submit Application"
+              <>
+              Next
+              <ArrowRight className="ml-2 h-4 w-4" />
+              </>
             )}
           </Button>
         </div>

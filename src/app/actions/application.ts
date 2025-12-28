@@ -9,11 +9,7 @@ import { ApplicationStatus, type Application } from '@/lib/types';
 import { revalidatePath } from 'next/cache';
 
 const formSchema = z.object({
-  firstName: z.string().min(2),
-  lastName: z.string().min(2),
-  email: z.string().email(),
-  phone: z.string().min(10),
-  address: z.string().min(5),
+  companyName: z.string(),
 });
 
 export async function submitApplication(values: z.infer<typeof formSchema>) {
@@ -35,20 +31,20 @@ export async function submitApplication(values: z.infer<typeof formSchema>) {
 
     console.log('Document written with ID: ', docRef.id);
 
-    // Call GenAI flow to generate email content
-    try {
-      const emailContent = await generatePersonalizedEmail({
-        formData: validationResult.data,
-        userEmail: validationResult.data.email,
-        userName: `${validationResult.data.firstName} ${validationResult.data.lastName}`,
-      });
-      // In a real application, you would use this content to send an email.
-      console.log('Generated Email Body:', emailContent.emailBody);
-      console.log('Generated PDF Content (Base64):', emailContent.pdfContent ? 'PDF content present' : 'No PDF content');
-    } catch (aiError) {
-      console.error("AI flow failed:", aiError);
-      // We don't block submission if AI fails, but we log the error.
-    }
+    // // Call GenAI flow to generate email content
+    // try {
+    //   const emailContent = await generatePersonalizedEmail({
+    //     formData: validationResult.data,
+    //     userEmail: validationResult.data.email,
+    //     userName: `${validationResult.data.firstName} ${validationResult.data.lastName}`,
+    //   });
+    //   // In a real application, you would use this content to send an email.
+    //   console.log('Generated Email Body:', emailContent.emailBody);
+    //   console.log('Generated PDF Content (Base64):', emailContent.pdfContent ? 'PDF content present' : 'No PDF content');
+    // } catch (aiError) {
+    //   console.error("AI flow failed:", aiError);
+    //   // We don't block submission if AI fails, but we log the error.
+    // }
 
   } catch (e) {
     console.error('Error adding document: ', e);

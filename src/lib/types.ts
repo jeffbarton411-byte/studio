@@ -18,11 +18,12 @@ export const statusColors: Record<ApplicationStatus, string> = {
 
 export interface Application {
   id: string; // Tracking ID
-  firstName: string;
-  lastName: string;
-  email: string;
-  phone: string;
-  address: string;
+  companyName?: string;
+  firstName?: string;
+  lastName?: string;
+  email?: string;
+  phone?: string;
+  address?: string;
   createdAt: Timestamp;
   status: ApplicationStatus;
 }
