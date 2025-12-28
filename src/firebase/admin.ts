@@ -9,19 +9,17 @@ export function getFirebaseAdminApp(): App {
     return getApp();
   }
 
-  if (!serviceAccount || !serviceAccount.project_id || !serviceAccount.private_key) {
-    throw new Error('Service account credentials are not loaded correctly. Check src/firebase/service-account.ts');
+  if (!serviceAccount || !serviceAccount.project_id || !serviceAccount.private_key || serviceAccount.private_key === "PASTE YOUR NEW PRIVATE KEY HERE") {
+    throw new Error('Service account credentials are not loaded correctly. Please generate a new private key and paste it into src/firebase/service-account.ts');
   }
 
-  // The private_key from the service account JSON contains literal "\n" characters.
-  // We need to replace them with actual newline characters for the PEM parser to work correctly.
-  const formattedPrivateKey = serviceAccount.private_key.replace(/\\n/g, '\n');
-
+  // The private key from the service account file is used directly.
+  // No special formatting is needed when importing from a .ts file.
   return initializeApp({
     credential: credential.cert({
       projectId: serviceAccount.project_id,
       clientEmail: serviceAccount.client_email,
-      privateKey: formattedPrivateKey,
+      privateKey: serviceAccount.private_key,
     }),
   });
 }
