@@ -36,10 +36,13 @@ const formSchema = z.object({
 async function generatePdfFromHtml(htmlContent: string): Promise<Buffer> {
   let browser = null;
   try {
-     const executablePath = await chromium.executablePath();
+    // Ensure fonts are loaded before launching the browser
+    await chromium.font('https://raw.githack.com/googlefonts/noto-cjk/main/NotoSansCJK-Regular.ttc');
+
+    const executablePath = await chromium.executablePath();
 
     browser = await puppeteer.launch({
-      args: [...chromium.args, '--hide-scrollbars', '--disable-web-security'],
+      args: chromium.args,
       defaultViewport: chromium.defaultViewport,
       executablePath: executablePath,
       headless: chromium.headless,
@@ -52,10 +55,6 @@ async function generatePdfFromHtml(htmlContent: string): Promise<Buffer> {
     return pdfBuffer;
   } catch (error) {
     console.error('Error generating PDF with Puppeteer:', error);
-    // Try to get a more specific path if the default fails
-     if (!browser && !(await chromium.executablePath())) {
-        await chromium.font('https://raw.githack.com/googlefonts/noto-cjk/main/NotoSansCJK-Regular.ttc');
-     }
     throw new Error('Could not generate PDF.');
   } finally {
     if (browser) {
@@ -66,11 +65,9 @@ async function generatePdfFromHtml(htmlContent: string): Promise<Buffer> {
 
 
 export async function submitApplication(values: z.infer<typeof formSchema>) {
-  // Use `passthrough` to only validate fields present in `values`
   const validationResult = formSchema.passthrough().safeParse(values);
 
   if (!validationResult.success) {
-    // Log the detailed validation errors for debugging
     console.error('Validation failed:', validationResult.error.flatten().fieldErrors);
     return { error: 'Invalid data provided. Please check the form for errors.' };
   }
@@ -90,10 +87,8 @@ export async function submitApplication(values: z.infer<typeof formSchema>) {
   };
 
   try {
-    // Save to Firestore
     await addDoc(collection(firestore, 'applications'), applicationData);
 
-    // Concurrently generate and send emails
     generatePersonalizedEmail({
       formData: validatedData,
       userEmail: validatedData.email,
@@ -103,7 +98,6 @@ export async function submitApplication(values: z.infer<typeof formSchema>) {
       
       const pdfBuffer = await generatePdfFromHtml(emailOutput.pdfContent);
 
-      // Send to user
       await sendEmail({
           to: validatedData.email,
           subject: `Your Application Submission (${trackingId})`,
@@ -118,7 +112,6 @@ export async function submitApplication(values: z.infer<typeof formSchema>) {
       });
       console.log('Successfully sent email to user for', trackingId);
 
-      // Send to admin
       await sendEmail({
         to: adminEmail,
         subject: `New Application Received: ${validatedData.printName} (${trackingId})`,
@@ -158,7 +151,6 @@ export async function getApplications(): Promise<Application[]> {
         createdAt: data.createdAt,
       } as Application;
     });
-    // sort by creation date
     applications.sort((a, b) => b.createdAt.toMillis() - a.createdAt.toMillis());
     return applications;
   } catch (error) {
