@@ -64,6 +64,12 @@ export default function PaymentForm({ onBack }: PaymentFormProps) {
                     </FormControl>
                     <FormLabel className="font-normal">PAYPAL</FormLabel>
                   </FormItem>
+                  <FormItem className="flex items-center space-x-3 space-y-0">
+                    <FormControl>
+                      <RadioGroupItem value="crypto" />
+                    </FormControl>
+                    <FormLabel className="font-normal">Cryptocurrency</FormLabel>
+                  </FormItem>
                 </RadioGroup>
               </FormControl>
               <FormMessage />
