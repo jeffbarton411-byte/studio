@@ -3,8 +3,6 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import Image from "next/image";
 import React from "react";
-import ApplicationStepper from "@/components/application-stepper";
-
 
 export default function ApplyPage() {
   const currentDate = new Date().toLocaleDateString('en-US', { year: 'numeric', month: '2-digit', day: '2-digit' }).replace(/\//g, '-');
@@ -23,13 +21,7 @@ export default function ApplyPage() {
            <p className="text-center text-sm text-muted-foreground pt-6">This Agreement is made and entered into on {currentDate}, by and between: Redwood</p>
         </CardHeader>
         <CardContent className="p-0">
-          <div className="p-8">
-            <ApplicationStepper />
-          </div>
-          <Separator />
-          <div className="p-8">
-            <ApplicationForm />
-          </div>
+          <ApplicationForm />
         </CardContent>
       </Card>
     </div>

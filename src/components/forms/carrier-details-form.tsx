@@ -1,7 +1,6 @@
 "use client";
 
-import { useForm, type UseFormReturn } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
+import { type UseFormReturn } from "react-hook-form";
 import * as z from "zod";
 import { Button } from "@/components/ui/button";
 import {
@@ -56,7 +55,7 @@ type CarrierDetailsFormValues = z.infer<typeof carrierDetailsSchema>;
 
 interface CarrierDetailsFormProps {
   form: UseFormReturn<any>;
-  onSubmit: (values: CarrierDetailsFormValues) => void;
+  onSubmit: (e: React.BaseSyntheticEvent) => Promise<void>;
   onBack: () => void;
 }
 
@@ -65,7 +64,7 @@ export default function CarrierDetailsForm({ form, onSubmit, onBack }: CarrierDe
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+      <form onSubmit={onSubmit} className="space-y-8">
         <div className="grid md:grid-cols-2 gap-8">
           <FormField
             control={form.control}
@@ -210,7 +209,7 @@ export default function CarrierDetailsForm({ form, onSubmit, onBack }: CarrierDe
               </>
             ) : (
               <>
-              Next
+              Submit
               <ArrowRight className="ml-2 h-4 w-4" />
               </>
             )}
