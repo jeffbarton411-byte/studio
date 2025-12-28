@@ -46,7 +46,7 @@ export async function submitApplication(values: z.infer<typeof formSchema>) {
   const validationResult = formSchema.safeParse(values);
 
   if (!validationResult.success) {
-    console.error('Validation failed:', validationResult.error.flatten().fieldErrors);
+    console.error('Server-side validation failed:', validationResult.error.flatten().fieldErrors);
     return { error: 'Invalid data provided. Please check the form for errors.' };
   }
 
