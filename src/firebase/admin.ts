@@ -7,18 +7,13 @@ export function getFirebaseAdminApp(): App {
     return getApp();
   }
 
-  const serviceAccount = process.env.FIREBASE_SERVICE_ACCOUNT
-    ? JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT)
-    : undefined;
-
-  if (serviceAccount) {
-    // For production environments with service account credentials
-    return initializeApp({
-      credential: credential.cert(serviceAccount),
-    });
-  } else {
-    // For local development or environments without explicit service accounts
-    // (e.g., relying on Application Default Credentials in Google Cloud environments)
-    return initializeApp();
+  if (!process.env.FIREBASE_SERVICE_ACCOUNT) {
+    throw new Error('FIREBASE_SERVICE_ACCOUNT environment variable is not set.');
   }
+  
+  const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
+
+  return initializeApp({
+    credential: credential.cert(serviceAccount),
+  });
 }
