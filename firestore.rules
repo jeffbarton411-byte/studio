@@ -1,0 +1,141 @@
+/**
+ * Core Philosophy:
+ * This ruleset enforces a strict user-ownership security model. All data is scoped
+ * directly to the authenticated user, meaning users can only access and manage
+ * their own data. There is no concept of public data or shared access between
+ * different users.
+ *
+ * Data Structure:
+ * The data is organized hierarchically under the `/users` collection. Each user
+ * has a main document at `/users/{userId}`, and all their associated data, such
+ * as form submissions, is stored in subcollections under that document (e.g.,
+ * `/users/{userId}/formSubmissions/{submissionId}`).
+ *
+ * Key Security Decisions:
+ * - Admin Access: Administrative functions are intended to be performed via a
+ *   service account, which bypasses these rules. Therefore, no admin roles are
+ *   defined within this ruleset.
+ * - No User Enumeration: Listing documents in the top-level `/users` collection
+ *   is explicitly disallowed to prevent unauthorized users from discovering the
+ *   identities of other users on the platform.
+ * - Strict Path-Based Scoping: All security decisions rely on the `{userId}`
+ *   wildcard in the path, ensuring that a user's access is confined to their
+ *   own data tree.
+ * - Authorization-Critical Validation: While data shapes are kept flexible for
+ *   prototyping, rules strictly enforce the immutability and correctness of
+ *   fields critical for authorization, such as the `id` on a User document and
+ *   the `userId` on a FormSubmission document.
+ *
+ * Denormalization for Authorization:
+ * The `FormSubmission` documents stored under `/users/{userId}/formSubmissions`
+ * contain a denormalized `userId` field. Security rules validate on create that
+ * this field matches the `{userId}` from the path. On update, this field is
+ * enforced as immutable. This creates a secure, unbreakable link between a
+ * document and its owner, enabling fast, simple, and secure rules without
+ * needing any extra document reads (`get()` calls).
+ *
+ * Structural Segregation:
+ * The design uses separate collections and subcollections for different data
+ * types (Users, FormSubmissions). This naturally segregates the security
+ * requirements for each data type, leading to a simpler and more secure
+ * ruleset.
+ */
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ----------------------------------------------------------------------
+    // Helper Functions
+    // ----------------------------------------------------------------------
+
+    /**
+     * Returns true if the user is signed in.
+     */
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    /**
+     * Returns true if the currently authenticated user's UID matches the
+     * provided userId. This is the primary function for ownership checks.
+     */
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    /**
+     * Returns true if the document exists AND the user is the owner.
+     * CRITICAL: Use for all update and delete operations to prevent acting
+     * on non-existent data and to enforce ownership.
+     */
+    function isExistingOwner(userId) {
+      return isOwner(userId) && resource != null;
+    }
+
+    /**
+     * Validates that a new User document contains an `id` field that
+     * correctly matches the document's path ID.
+     */
+    function isCreatingValidUser(userId) {
+      return request.resource.data.id == userId;
+    }
+
+    /**
+     * Validates that the `id` field of a User document is immutable on update.
+     */
+    function isUpdatingValidUser() {
+      return request.resource.data.id == resource.data.id;
+    }
+
+    /**
+     * Validates that a new FormSubmission document contains a `userId` field
+     * that correctly matches the parent user's ID from the path.
+     */
+    function isCreatingValidFormSubmission(userId) {
+      return request.resource.data.userId == userId;
+    }
+
+    /**
+     * Validates that the `userId` field of a FormSubmission is immutable.
+     */
+    function isUpdatingValidFormSubmission() {
+      return request.resource.data.userId == resource.data.userId;
+    }
+
+    // ----------------------------------------------------------------------
+    // Collection Rules
+    // ----------------------------------------------------------------------
+
+    /**
+     * @description Controls access to a user's own profile document.
+     * @path /users/{userId}
+     * @allow (get) A signed-in user reads their own profile. auth.uid: 'user_abc', path: '/users/user_abc'
+     * @deny (get) A signed-in user tries to read another user's profile. auth.uid: 'user_abc', path: '/users/user_xyz'
+     * @deny (list) Any user tries to list all users in the system.
+     * @principle Restricts access to a user's own data tree and prevents user enumeration.
+     */
+    match /users/{userId} {
+      allow get: if isOwner(userId);
+      allow list: if false;
+      allow create: if isOwner(userId) && isCreatingValidUser(userId);
+      allow update: if isExistingOwner(userId) && isUpdatingValidUser();
+      allow delete: if isExistingOwner(userId);
+    }
+
+    /**
+     * @description Controls access to form submissions, which are private to each user.
+     * @path /users/{userId}/formSubmissions/{formSubmissionId}
+     * @allow (create) A signed-in user creates a new form submission under their own user path. auth.uid: 'user_abc', path: '/users/user_abc/formSubmissions/sub_123'
+     * @allow (list) A signed-in user lists all of their own form submissions. auth.uid: 'user_abc', path: '/users/user_abc/formSubmissions'
+     * @deny (get) A signed-in user tries to read a submission belonging to another user. auth.uid: 'user_abc', path: '/users/user_xyz/formSubmissions/sub_456'
+     * @principle Enforces document ownership for all operations and validates the relational integrity between a submission and its parent user.
+     */
+    match /users/{userId}/formSubmissions/{formSubmissionId} {
+      allow get: if isOwner(userId);
+      allow list: if isOwner(userId);
+      allow create: if isOwner(userId) && isCreatingValidFormSubmission(userId);
+      allow update: if isExistingOwner(userId) && isUpdatingValidFormSubmission();
+      allow delete: if isExistingOwner(userId);
+    }
+  }
+}
