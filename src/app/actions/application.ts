@@ -10,7 +10,7 @@ import { getFirestore } from 'firebase-admin/firestore';
 import { getFirebaseAdminApp } from '@/firebase/admin';
 import { generatePersonalizedEmail } from '@/ai/flows/personalized-submission-email';
 import { sendEmail } from '@/lib/email';
-import puppeteer from 'puppeteer';
+import htmlPdf from 'html-pdf-node';
 
 
 const formSchema = z.object({
@@ -33,15 +33,16 @@ const formSchema = z.object({
 
 
 async function generatePdfFromHtml(htmlContent: string): Promise<Buffer> {
-  const browser = await puppeteer.launch({
-    headless: true,
-    args: ['--no-sandbox', '--disable-setuid-sandbox'],
-  });
-  const page = await browser.newPage();
-  await page.setContent(htmlContent, { waitUntil: 'networkidle0' });
-  const pdfBuffer = await page.pdf({ format: 'A4' });
-  await browser.close();
-  return pdfBuffer;
+  try {
+    const pdfBuffer = await htmlPdf.generatePdf(
+      { content: htmlContent },
+      { format: 'A4' }
+    );
+    return pdfBuffer;
+  } catch (error) {
+    console.error('Error generating PDF with html-pdf-node:', error);
+    throw new Error('Could not generate PDF.');
+  }
 }
 
 
