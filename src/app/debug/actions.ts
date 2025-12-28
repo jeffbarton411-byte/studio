@@ -2,7 +2,8 @@
 
 import { getFirestore } from 'firebase-admin/firestore';
 import { getFirebaseAdminApp } from '@/firebase/admin';
-import { sendEmail, sendTestEmailWithPdf as sendTestEmailWithPdfAction } from '@/app/actions/application';
+import { sendEmail } from '@/lib/email';
+import { sendTestEmailWithPdf as sendTestEmailWithPdfAction } from '@/app/actions/application';
 
 export async function runFirestoreTest() {
   console.log('Running Firestore test...');
