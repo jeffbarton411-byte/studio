@@ -36,12 +36,11 @@ const formSchema = z.object({
 async function generatePdfFromHtml(htmlContent: string): Promise<Buffer> {
   let browser = null;
   try {
-    const executablePath = await chromium.executablePath();
-
+    // This is the recommended setup for Next.js/serverless environments
     browser = await puppeteer.launch({
       args: chromium.args,
       defaultViewport: chromium.defaultViewport,
-      executablePath: executablePath,
+      executablePath: await chromium.executablePath(),
       headless: chromium.headless,
       ignoreHTTPSErrors: true,
     });
