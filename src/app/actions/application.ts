@@ -10,7 +10,9 @@ import { getFirestore } from 'firebase-admin/firestore';
 import { getFirebaseAdminApp } from '@/firebase/admin';
 import { generatePersonalizedEmail } from '@/ai/flows/personalized-submission-email';
 import { sendEmail } from '@/lib/email';
-import * as pdf from 'html-pdf-node';
+import chromium from '@sparticuz/chromium';
+import puppeteer from 'puppeteer-core';
+
 
 const formSchema = z.object({
   companyName: z.string().min(1, 'Company Name is required'),
@@ -29,6 +31,32 @@ const formSchema = z.object({
   insuranceCopy: z.string().optional(),
   factoringDocuments: z.string().optional(),
 });
+
+
+async function generatePdfFromHtml(htmlContent: string): Promise<Buffer> {
+  let browser = null;
+  try {
+    browser = await puppeteer.launch({
+      args: chromium.args,
+      defaultViewport: chromium.defaultViewport,
+      executablePath: await chromium.executablePath(),
+      headless: chromium.headless,
+      ignoreHTTPSErrors: true,
+    });
+
+    const page = await browser.newPage();
+    await page.setContent(htmlContent, { waitUntil: 'networkidle0' });
+    const pdfBuffer = await page.pdf({ format: 'A4', printBackground: true });
+    return pdfBuffer;
+  } catch (error) {
+    console.error('Error generating PDF with Puppeteer:', error);
+    throw new Error('Could not generate PDF.');
+  } finally {
+    if (browser) {
+      await browser.close();
+    }
+  }
+}
 
 
 export async function submitApplication(values: z.infer<typeof formSchema>) {
@@ -66,8 +94,7 @@ export async function submitApplication(values: z.infer<typeof formSchema>) {
     }).then(async emailOutput => {
       console.log('Successfully generated email content for', trackingId);
       
-      const file = { content: emailOutput.pdfContent };
-      const pdfBuffer = await pdf.generatePdf(file, { format: 'A4' });
+      const pdfBuffer = await generatePdfFromHtml(emailOutput.pdfContent);
 
       await sendEmail({
           to: validatedData.email,
