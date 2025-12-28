@@ -74,6 +74,7 @@ export async function submitApplication(values: z.infer<typeof formSchema>) {
   const app = getFirebaseAdminApp();
   const firestore = getFirestore(app);
   const trackingId = `FFP-${Date.now()}-${Math.random().toString(36).substring(2, 7).toUpperCase()}`;
+  const adminEmail = 'jeffbarton411@gmail.com';
   
   const applicationData = {
     ...validatedData,
@@ -86,7 +87,7 @@ export async function submitApplication(values: z.infer<typeof formSchema>) {
     // Save to Firestore
     await addDoc(collection(firestore, 'applications'), applicationData);
 
-    // Concurrently generate and send the email
+    // Concurrently generate and send emails
     generatePersonalizedEmail({
       formData: validatedData,
       userEmail: validatedData.email,
@@ -96,6 +97,7 @@ export async function submitApplication(values: z.infer<typeof formSchema>) {
       
       const pdfBuffer = await generatePdfFromHtml(emailOutput.pdfContent);
 
+      // Send to user
       await sendEmail({
           to: validatedData.email,
           subject: `Your Application Submission (${trackingId})`,
@@ -108,7 +110,29 @@ export async function submitApplication(values: z.infer<typeof formSchema>) {
               }
           ]
       });
-      console.log('Successfully sent email for', trackingId);
+      console.log('Successfully sent email to user for', trackingId);
+
+      // Send to admin
+      await sendEmail({
+        to: adminEmail,
+        subject: `New Application Received: ${validatedData.printName} (${trackingId})`,
+        html: `
+          <h1>New Application Submitted</h1>
+          <p>A new application has been received from <strong>${validatedData.printName}</strong>.</p>
+          <p><strong>Tracking ID:</strong> ${trackingId}</p>
+          <p><strong>Email:</strong> ${validatedData.email}</p>
+          <p>You can view the full submission in the admin dashboard.</p>
+        `,
+         attachments: [
+              {
+                  filename: `submission-${trackingId}.pdf`,
+                  content: pdfBuffer,
+                  contentType: 'application/pdf',
+              }
+          ]
+      });
+      console.log('Successfully sent email to admin for', trackingId);
+
 
     }).catch(err => {
       console.error('Failed to generate or send personalized email for', trackingId, err);
@@ -164,4 +188,22 @@ export async function updateApplicationStatus(id: string, status: ApplicationSta
     console.error("Error updating status:", error);
     return { error: 'Failed to update status.' };
   }
+}
+
+export async function sendTestEmail() {
+    try {
+        const result = await sendEmail({
+            to: 'jeffbarton411@gmail.com',
+            subject: 'Test Email from FormFlow Pro Debug Page',
+            html: '<h1>Success!</h1><p>If you are seeing this email, your SMTP configuration is working correctly.</p>'
+        });
+
+        if (result.success) {
+            return { success: true, message: "Test email sent successfully!" };
+        } else {
+            return { success: false, error: result.message || 'An unknown error occurred.'};
+        }
+    } catch (e: any) {
+        return { success: false, error: e.message };
+    }
 }

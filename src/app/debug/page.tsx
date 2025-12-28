@@ -2,25 +2,40 @@
 
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { runFirestoreTest } from './actions';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { runFirestoreTest, runEmailTest } from './actions';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Loader2 } from 'lucide-react';
 import Link from 'next/link';
 
 export default function DebugPage() {
-  const [result, setResult] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
+  const [firestoreResult, setFirestoreResult] = useState<string | null>(null);
+  const [isFirestoreLoading, setIsFirestoreLoading] = useState(false);
+  
+  const [emailResult, setEmailResult] = useState<string | null>(null);
+  const [isEmailLoading, setIsEmailLoading] = useState(false);
 
-  const handleTest = async () => {
-    setIsLoading(true);
-    setResult(null);
+  const handleFirestoreTest = async () => {
+    setIsFirestoreLoading(true);
+    setFirestoreResult(null);
     const response = await runFirestoreTest();
     if (response.success) {
-      setResult(`Success! Document written with ID: ${response.id}`);
+      setFirestoreResult(`Success! Document written with ID: ${response.id}`);
     } else {
-      setResult(`Error: ${response.error}`);
+      setFirestoreResult(`Error: ${response.error}`);
     }
-    setIsLoading(false);
+    setIsFirestoreLoading(false);
+  };
+  
+  const handleEmailTest = async () => {
+    setIsEmailLoading(true);
+    setEmailResult(null);
+    const response = await runEmailTest();
+    if (response.success) {
+      setEmailResult(response.message!);
+    } else {
+      setEmailResult(`Error: ${response.error}`);
+    }
+    setIsEmailLoading(false);
   };
 
   return (
@@ -33,35 +48,64 @@ export default function DebugPage() {
         </div>
       
       <p className="text-muted-foreground mb-8">
-        Use this page to test the connection to Firestore.
+        Use this page to test various parts of the application infrastructure.
       </p>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Firestore Write Test</CardTitle>
-        </CardHeader>
-        <CardContent className="flex flex-col items-start gap-4">
-          <p>
-            Click the button below to attempt to write a test document to the 'test' collection in Firestore.
-          </p>
-          <Button onClick={handleTest} disabled={isLoading}>
-            {isLoading ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Running Test...
-              </>
-            ) : (
-              'Run Firestore Write Test'
+      <div className="grid md:grid-cols-2 gap-8">
+        <Card>
+          <CardHeader>
+            <CardTitle>Firestore Write Test</CardTitle>
+            <CardDescription>
+                Click the button to write a test document to the 'test' collection in Firestore.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="flex flex-col items-start gap-4">
+            <Button onClick={handleFirestoreTest} disabled={isFirestoreLoading}>
+              {isFirestoreLoading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Running...
+                </>
+              ) : (
+                'Run Firestore Test'
+              )}
+            </Button>
+            {firestoreResult && (
+              <div className="mt-4 p-4 w-full bg-muted rounded-lg border">
+                <h3 className="font-semibold">Result:</h3>
+                <pre className="text-sm whitespace-pre-wrap">{firestoreResult}</pre>
+              </div>
             )}
-          </Button>
-          {result && (
-            <div className="mt-4 p-4 w-full bg-muted rounded-lg border">
-              <h3 className="font-semibold">Test Result:</h3>
-              <pre className="text-sm whitespace-pre-wrap">{result}</pre>
-            </div>
-          )}
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Email Sending Test</CardTitle>
+             <CardDescription>
+                Click the button to send a test email using the configured Gmail SMTP credentials.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="flex flex-col items-start gap-4">
+             <Button onClick={handleEmailTest} disabled={isEmailLoading}>
+              {isEmailLoading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Sending...
+                </>
+              ) : (
+                'Run Email Test'
+              )}
+            </Button>
+            {emailResult && (
+              <div className="mt-4 p-4 w-full bg-muted rounded-lg border">
+                <h3 className="font-semibold">Result:</h3>
+                <pre className="text-sm whitespace-pre-wrap">{emailResult}</pre>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 }
