@@ -8,8 +8,10 @@ import CompanyInfoForm, { companyInfoSchema } from "./forms/company-info-form";
 import CarrierDetailsForm, { carrierDetailsSchema } from "./forms/carrier-details-form";
 import { submitApplication } from "@/app/actions/application";
 import ApplicationStepper from "./application-stepper";
+import PaymentForm, { paymentSchema } from "./forms/payment-form";
+import { Form } from "./ui/form";
 
-const fullSchema = companyInfoSchema.merge(carrierDetailsSchema);
+const fullSchema = companyInfoSchema.merge(carrierDetailsSchema).merge(paymentSchema);
 
 type ApplicationFormValues = z.infer<typeof fullSchema>;
 
@@ -20,6 +22,9 @@ export default function ApplicationForm() {
   const currentSchema = useMemo(() => {
     if (step === 2) {
       return carrierDetailsSchema;
+    }
+    if (step === 3) {
+        return paymentSchema;
     }
     return companyInfoSchema;
   }, [step]);
@@ -35,6 +40,7 @@ export default function ApplicationForm() {
       dotNumber: "",
       phoneNumber: "",
       services: [],
+      paymentMethod: "",
     },
     // Re-validate on step change
     context: { step },
@@ -43,8 +49,8 @@ export default function ApplicationForm() {
   const nextStep = () => setStep((prev) => prev + 1);
   const prevStep = () => setStep((prev) => prev - 1);
 
-  const onSubmit = (values: ApplicationFormValues) => {
-    if (step === 1) {
+  const processForm = (values: ApplicationFormValues) => {
+    if (step < 3) {
       nextStep();
     } else {
       startTransition(async () => {
@@ -61,8 +67,13 @@ export default function ApplicationForm() {
         <ApplicationStepper currentStep={step} />
       </div>
       <div className="p-8">
-        {step === 1 && <CompanyInfoForm form={form} onSubmit={onSubmit} />}
-        {step === 2 && <CarrierDetailsForm form={form} onSubmit={form.handleSubmit(onSubmit)} onBack={prevStep} />}
+        <Form {...form}>
+            <form onSubmit={form.handleSubmit(processForm)} className="space-y-8">
+                {step === 1 && <CompanyInfoForm />}
+                {step === 2 && <CarrierDetailsForm onBack={prevStep} />}
+                {step === 3 && <PaymentForm onBack={prevStep} />}
+            </form>
+        </Form>
       </div>
     </div>
   );

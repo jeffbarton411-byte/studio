@@ -5,7 +5,6 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { Button } from "@/components/ui/button";
 import {
-  Form,
   FormControl,
   FormField,
   FormItem,
@@ -16,6 +15,7 @@ import { useState } from "react";
 import { ArrowRight, Loader2 } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { format } from "date-fns";
+import { useFormContext } from "react-hook-form";
 
 export const companyInfoSchema = z.object({
   companyName: z.string({ required_error: "Please select a company." }),
@@ -24,19 +24,17 @@ export const companyInfoSchema = z.object({
 type CompanyInfoFormValues = z.infer<typeof companyInfoSchema>;
 
 interface CompanyInfoFormProps {
-  form: UseFormReturn<any>;
-  onSubmit: (values: CompanyInfoFormValues) => void;
 }
 
-export default function CompanyInfoForm({ form, onSubmit }: CompanyInfoFormProps) {
+export default function CompanyInfoForm({ }: CompanyInfoFormProps) {
+  const form = useFormContext();
   const [selectedCompany, setSelectedCompany] = useState(form.getValues('companyName') || "");
   const isPending = form.formState.isSubmitting;
   
   const today = new Date();
 
   return (
-    <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+    <>
         <FormField
           control={form.control}
           name="companyName"
@@ -78,7 +76,7 @@ export default function CompanyInfoForm({ form, onSubmit }: CompanyInfoFormProps
             {isPending ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Submitting...
+                Processing...
               </>
             ) : (
               <>
@@ -88,7 +86,6 @@ export default function CompanyInfoForm({ form, onSubmit }: CompanyInfoFormProps
             )}
           </Button>
         </div>
-      </form>
-    </Form>
+    </>
   );
 }

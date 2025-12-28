@@ -4,9 +4,7 @@ import { type UseFormReturn } from "react-hook-form";
 import * as z from "zod";
 import { Button } from "@/components/ui/button";
 import {
-  Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -15,6 +13,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { ArrowRight, ArrowLeft, Loader2 } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
+import { useFormContext } from "react-hook-form";
 
 const services = [
   {
@@ -54,17 +53,15 @@ export const carrierDetailsSchema = z.object({
 type CarrierDetailsFormValues = z.infer<typeof carrierDetailsSchema>;
 
 interface CarrierDetailsFormProps {
-  form: UseFormReturn<any>;
-  onSubmit: (e: React.BaseSyntheticEvent) => Promise<void>;
   onBack: () => void;
 }
 
-export default function CarrierDetailsForm({ form, onSubmit, onBack }: CarrierDetailsFormProps) {
+export default function CarrierDetailsForm({ onBack }: CarrierDetailsFormProps) {
+  const form = useFormContext();
   const isPending = form.formState.isSubmitting;
 
   return (
-    <Form {...form}>
-      <form onSubmit={onSubmit} className="space-y-8">
+    <>
         <div className="grid md:grid-cols-2 gap-8">
           <FormField
             control={form.control}
@@ -205,17 +202,16 @@ export default function CarrierDetailsForm({ form, onSubmit, onBack }: CarrierDe
             {isPending ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Submitting...
+                Processing...
               </>
             ) : (
               <>
-              Submit
+              Next
               <ArrowRight className="ml-2 h-4 w-4" />
               </>
             )}
           </Button>
         </div>
-      </form>
-    </Form>
+    </>
   );
 }
