@@ -36,9 +36,6 @@ const formSchema = z.object({
 async function generatePdfFromHtml(htmlContent: string): Promise<Buffer> {
   let browser = null;
   try {
-    // Ensure fonts are loaded before launching the browser
-    await chromium.font('https://raw.githack.com/googlefonts/noto-cjk/main/NotoSansCJK-Regular.ttc');
-
     const executablePath = await chromium.executablePath();
 
     browser = await puppeteer.launch({
@@ -53,9 +50,10 @@ async function generatePdfFromHtml(htmlContent: string): Promise<Buffer> {
     await page.setContent(htmlContent, { waitUntil: 'networkidle0' });
     const pdfBuffer = await page.pdf({ format: 'A4', printBackground: true });
     return pdfBuffer;
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error generating PDF with Puppeteer:', error);
-    throw new Error('Could not generate PDF.');
+    // Throw a more detailed error to help with debugging
+    throw new Error(`Could not generate PDF. Puppeteer error: ${error.message}`);
   } finally {
     if (browser) {
       await browser.close();
