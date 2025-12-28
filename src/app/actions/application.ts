@@ -9,6 +9,8 @@ import { revalidatePath } from 'next/cache';
 import { getFirestore } from 'firebase-admin/firestore';
 import { getFirebaseAdminApp } from '@/firebase/admin';
 import { generatePersonalizedEmail } from '@/ai/flows/personalized-submission-email';
+import { sendEmail } from '@/lib/email';
+import * as pdf from 'html-pdf-node';
 
 const formSchema = z.object({
   companyName: z.string().min(1, 'Company Name is required'),
@@ -23,14 +25,15 @@ const formSchema = z.object({
   dotNumber: z.string().min(1, 'DOT Number is required'),
   phoneNumber: z.string().min(1, 'Phone Number is required'),
   services: z.array(z.string()).min(1, 'At least one service must be selected'),
-  paymentMethod: zstring().min(1, 'Payment method is required'),
+  paymentMethod: z.string().min(1, 'Payment method is required'),
   insuranceCopy: z.string().optional(),
   factoringDocuments: z.string().optional(),
 });
 
 
 export async function submitApplication(values: z.infer<typeof formSchema>) {
-  const validationResult = formSchema.safeParse(values);
+  // Use `passthrough` to only validate fields present in `values`
+  const validationResult = formSchema.passthrough().safeParse(values);
 
   if (!validationResult.success) {
     // Log the detailed validation errors for debugging
@@ -38,12 +41,15 @@ export async function submitApplication(values: z.infer<typeof formSchema>) {
     return { error: 'Invalid data provided. Please check the form for errors.' };
   }
 
+  const validatedData = validationResult.data;
+
   const app = getFirebaseAdminApp();
   const firestore = getFirestore(app);
   const trackingId = `FFP-${Date.now()}-${Math.random().toString(36).substring(2, 7).toUpperCase()}`;
+  
   const applicationData = {
+    ...validatedData,
     id: trackingId,
-    ...validationResult.data,
     status: ApplicationStatus.Submitted,
     createdAt: serverTimestamp(),
   };
@@ -53,20 +59,32 @@ export async function submitApplication(values: z.infer<typeof formSchema>) {
     await addDoc(collection(firestore, 'applications'), applicationData);
 
     // Concurrently generate and send the email
-    // We don't need to `await` this if we don't want to block the user's redirect.
-    // The email sending will happen in the background.
     generatePersonalizedEmail({
-      formData: validationResult.data,
-      userEmail: validationResult.data.email,
-      userName: validationResult.data.printName,
-    }).then(emailOutput => {
+      formData: validatedData,
+      userEmail: validatedData.email,
+      userName: validatedData.printName,
+    }).then(async emailOutput => {
       console.log('Successfully generated email content for', trackingId);
-      // Here you would integrate with your email sending service (e.g., Nodemailer, SendGrid)
-      // For now, we are just logging the output.
-      // console.log('Email Body:', emailOutput.emailBody);
-      // console.log('PDF Content:', emailOutput.pdfContent);
+      
+      const file = { content: emailOutput.pdfContent };
+      const pdfBuffer = await pdf.generatePdf(file, { format: 'A4' });
+
+      await sendEmail({
+          to: validatedData.email,
+          subject: `Your Application Submission (${trackingId})`,
+          html: emailOutput.emailBody,
+          attachments: [
+              {
+                  filename: `submission-${trackingId}.pdf`,
+                  content: pdfBuffer,
+                  contentType: 'application/pdf',
+              }
+          ]
+      });
+      console.log('Successfully sent email for', trackingId);
+
     }).catch(err => {
-      console.error('Failed to generate personalized email for', trackingId, err);
+      console.error('Failed to generate or send personalized email for', trackingId, err);
     });
 
   } catch (e: any) {
