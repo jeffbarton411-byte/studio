@@ -25,7 +25,6 @@ export const documentUploadSchema = z.object({
 });
 
 interface DocumentUploadFormProps {
-  onBack: () => void;
 }
 
 type UploadStatus = "idle" | "uploading" | "success" | "error";
@@ -140,9 +139,8 @@ const FileUpload = ({ name, label }: { name: "insuranceCopy" | "factoringDocumen
 };
 
 
-export default function DocumentUploadForm({ onBack }: DocumentUploadFormProps) {
+export default function DocumentUploadForm({}: DocumentUploadFormProps) {
   const form = useFormContext();
-  const isPending = form.formState.isSubmitting;
 
   return (
     <>
@@ -157,26 +155,6 @@ export default function DocumentUploadForm({ onBack }: DocumentUploadFormProps) 
             <FileUpload name="insuranceCopy" label="Copy of Insurance" />
             <FileUpload name="factoringDocuments" label="Factoring Documents" />
         </div>
-      </div>
-      
-      <div className="flex justify-between mt-8">
-        <Button type="button" size="lg" variant="outline" onClick={onBack}>
-          <ArrowLeft className="mr-2 h-4 w-4" />
-          Back
-        </Button>
-        <Button type="submit" size="lg" disabled={isPending}>
-          {isPending ? (
-            <>
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              Processing...
-            </>
-          ) : (
-            <>
-              Next
-              <ArrowRight className="ml-2 h-4 w-4" />
-            </>
-          )}
-        </Button>
       </div>
     </>
   );

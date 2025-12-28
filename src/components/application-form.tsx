@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useForm } from "react-hook-form";
@@ -12,6 +13,8 @@ import PaymentForm, { paymentSchema } from "./forms/payment-form";
 import DocumentUploadForm, { documentUploadSchema } from "./forms/document-upload-form";
 import ReviewForm, { reviewSchema } from "./forms/review-form";
 import { Form } from "./ui/form";
+import { Button } from "./ui/button";
+import { ArrowLeft, ArrowRight, Loader2 } from "lucide-react";
 
 const fullSchema = companyInfoSchema.merge(carrierDetailsSchema).merge(paymentSchema).merge(documentUploadSchema).merge(reviewSchema);
 
@@ -21,28 +24,18 @@ export default function ApplicationForm() {
   const [step, setStep] = useState(1);
   const [isPending, startTransition] = useTransition();
 
-  const currentSchema = useMemo(() => {
-    switch (step) {
-      case 1:
-        return companyInfoSchema;
-      case 2:
-        return carrierDetailsSchema;
-      case 3:
-        return paymentSchema;
-      case 4:
-        return documentUploadSchema;
-      case 5:
-        return reviewSchema;
-      default:
-        return companyInfoSchema;
-    }
-  }, [step]);
-
+  const schemas = [
+    companyInfoSchema,
+    carrierDetailsSchema,
+    paymentSchema,
+    documentUploadSchema,
+    reviewSchema
+  ];
 
   const form = useForm<ApplicationFormValues>({
-    resolver: zodResolver(currentSchema),
+    resolver: zodResolver(schemas[step - 1]),
     defaultValues: {
-      companyName: "",
+      companyName: "North Star Shipping LLC",
       carrierFullName: "",
       carrierCompanyName: "",
       mcNumber: "",
@@ -58,22 +51,78 @@ export default function ApplicationForm() {
       email: "",
       howYouGetPaid: ""
     },
-    context: { step },
+    mode: "onChange",
   });
 
   const nextStep = () => setStep((prev) => prev + 1);
   const prevStep = () => setStep((prev) => prev - 1);
 
-  const processForm = (values: Partial<ApplicationFormValues>) => {
-    if (step < 5) {
-      nextStep();
-    } else {
-      startTransition(async () => {
-        const allData = form.getValues();
-        await submitApplication({ ...allData, ...values });
-      });
+  const processForm = (values: ApplicationFormValues) => {
+    startTransition(async () => {
+      await submitApplication(values);
+    });
+  };
+
+  const StepContent = () => {
+    switch (step) {
+      case 1:
+        return <CompanyInfoForm />;
+      case 2:
+        return <CarrierDetailsForm />;
+      case 3:
+        return <PaymentForm />;
+      case 4:
+        return <DocumentUploadForm />;
+      case 5:
+        return <ReviewForm />;
+      default:
+        return null;
     }
   };
+
+  const FormButtons = () => {
+    if (step === 1) {
+      return (
+        <div className="flex justify-end">
+          <Button type="button" size="lg" onClick={form.handleSubmit(nextStep)}>
+            Next <ArrowRight className="ml-2 h-4 w-4" />
+          </Button>
+        </div>
+      );
+    }
+    if (step > 1 && step < 5) {
+      return (
+        <div className="flex justify-between">
+          <Button type="button" size="lg" variant="outline" onClick={prevStep}>
+            <ArrowLeft className="mr-2 h-4 w-4" /> Back
+          </Button>
+          <Button type="button" size="lg" onClick={form.handleSubmit(nextStep)}>
+            Next <ArrowRight className="ml-2 h-4 w-4" />
+          </Button>
+        </div>
+      );
+    }
+    if (step === 5) {
+      return (
+        <div className="flex justify-between mt-8">
+          <Button type="button" size="lg" variant="outline" onClick={prevStep}>
+            <ArrowLeft className="mr-2 h-4 w-4" /> Back
+          </Button>
+          <Button type="submit" size="lg" disabled={isPending}>
+            {isPending ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Submitting...
+              </>
+            ) : (
+              "Submit Application"
+            )}
+          </Button>
+        </div>
+      );
+    }
+    return null;
+  };
+
 
   return (
     <div>
@@ -83,11 +132,8 @@ export default function ApplicationForm() {
       <div className="p-8">
         <Form {...form}>
             <form onSubmit={form.handleSubmit(processForm)} className="space-y-8">
-                {step === 1 && <CompanyInfoForm />}
-                {step === 2 && <CarrierDetailsForm onBack={prevStep} />}
-                {step === 3 && <PaymentForm onBack={prevStep} />}
-                {step === 4 && <DocumentUploadForm onBack={prevStep} />}
-                {step === 5 && <ReviewForm onBack={prevStep} />}
+                <StepContent />
+                <FormButtons />
             </form>
         </Form>
       </div>

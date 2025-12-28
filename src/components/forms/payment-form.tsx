@@ -1,3 +1,4 @@
+
 "use client";
 
 import { type UseFormReturn } from "react-hook-form";
@@ -19,12 +20,10 @@ export const paymentSchema = z.object({
 });
 
 interface PaymentFormProps {
-  onBack: () => void;
 }
 
-export default function PaymentForm({ onBack }: PaymentFormProps) {
+export default function PaymentForm({}: PaymentFormProps) {
     const form = useFormContext();
-    const isPending = form.formState.isSubmitting;
   
     return (
     <>
@@ -120,26 +119,6 @@ export default function PaymentForm({ onBack }: PaymentFormProps) {
             <p className="text-sm">{form.getValues('companyName')}</p>
             <p className="text-sm">Date: {new Date().toLocaleDateString()}</p>
         </div>
-      </div>
-
-      <div className="flex justify-between mt-8">
-        <Button type="button" size="lg" variant="outline" onClick={onBack}>
-          <ArrowLeft className="mr-2 h-4 w-4" />
-          Back
-        </Button>
-        <Button type="submit" size="lg" disabled={isPending}>
-          {isPending ? (
-            <>
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              Submitting...
-            </>
-          ) : (
-            <>
-              Next
-              <ArrowRight className="ml-2 h-4 w-4" />
-            </>
-          )}
-        </Button>
       </div>
     </>
   );

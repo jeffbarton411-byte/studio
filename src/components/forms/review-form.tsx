@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useFormContext } from "react-hook-form";
@@ -31,7 +32,6 @@ export const reviewSchema = z.object({
 });
 
 interface ReviewFormProps {
-  onBack: () => void;
 }
 
 const ReviewItem = ({ label, value }: { label: string; value?: string | string[] }) => (
@@ -56,9 +56,8 @@ const DocumentPreviewItem = ({ label, url }: { label: string; url?: string }) =>
     </div>
   );
 
-export default function ReviewForm({ onBack }: ReviewFormProps) {
+export default function ReviewForm({}: ReviewFormProps) {
   const form = useFormContext();
-  const isPending = form.formState.isSubmitting;
   const allData = form.getValues();
 
   return (
@@ -250,25 +249,6 @@ export default function ReviewForm({ onBack }: ReviewFormProps) {
             </div>
 
         </div>
-      </div>
-
-      <div className="flex justify-between mt-8">
-        <Button type="button" size="lg" variant="outline" onClick={onBack}>
-          <ArrowLeft className="mr-2 h-4 w-4" />
-          Back
-        </Button>
-        <Button type="submit" size="lg" disabled={isPending}>
-          {isPending ? (
-            <>
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              Submitting Application...
-            </>
-          ) : (
-            <>
-              Submit Application
-            </>
-          )}
-        </Button>
       </div>
     </div>
   );

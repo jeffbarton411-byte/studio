@@ -1,3 +1,4 @@
+
 "use client";
 
 import { type UseFormReturn } from "react-hook-form";
@@ -53,12 +54,10 @@ export const carrierDetailsSchema = z.object({
 type CarrierDetailsFormValues = z.infer<typeof carrierDetailsSchema>;
 
 interface CarrierDetailsFormProps {
-  onBack: () => void;
 }
 
-export default function CarrierDetailsForm({ onBack }: CarrierDetailsFormProps) {
+export default function CarrierDetailsForm({}: CarrierDetailsFormProps) {
   const form = useFormContext();
-  const isPending = form.formState.isSubmitting;
 
   return (
     <>
@@ -191,27 +190,6 @@ export default function CarrierDetailsForm({ onBack }: CarrierDetailsFormProps) 
             </FormItem>
           )}
         />
-
-
-        <div className="flex justify-between">
-            <Button type="button" size="lg" variant="outline" onClick={onBack}>
-              <ArrowLeft className="mr-2 h-4 w-4" />
-              Back
-            </Button>
-          <Button type="submit" size="lg" disabled={isPending}>
-            {isPending ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Processing...
-              </>
-            ) : (
-              <>
-              Next
-              <ArrowRight className="ml-2 h-4 w-4" />
-              </>
-            )}
-          </Button>
-        </div>
     </>
   );
 }
