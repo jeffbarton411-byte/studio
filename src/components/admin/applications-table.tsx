@@ -1,3 +1,4 @@
+
 'use client';
 
 import * as React from 'react';
@@ -25,12 +26,15 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { MoreHorizontal, View, CheckCircle, CircleDashed, XCircle, Trash2, Hourglass } from 'lucide-react';
+import { MoreHorizontal, View, CheckCircle, CircleDashed, XCircle, Trash2, Hourglass, Eye, File as FileIcon } from 'lucide-react';
 import { ApplicationStatus, type Application } from '@/lib/types';
 import { format } from 'date-fns';
 import { useToast } from '@/components/ui/use-toast';
 import { updateApplicationStatus } from '@/app/actions/application';
 import StatusBadge from './status-badge';
+import { ScrollArea } from '../ui/scroll-area';
+import Link from 'next/link';
+import Image from 'next/image';
 
 type SerializableApplication = Omit<Application, 'createdAt'> & {
   createdAt: string;
@@ -44,6 +48,39 @@ const statusIcons: Record<ApplicationStatus, React.ReactNode> = {
   [ApplicationStatus.Deleted]: <Trash2 className="mr-2 h-4 w-4" />,
 };
 
+const DetailItem = ({ label, value }: { label: string, value: React.ReactNode }) => (
+    <div className="grid grid-cols-3 gap-2 py-2 border-b">
+        <p className="text-sm font-medium text-muted-foreground col-span-1">{label}</p>
+        <div className="text-sm col-span-2">{value}</div>
+    </div>
+)
+
+const DocumentPreview = ({ label, url }: { label: string, url?: string }) => (
+    <div className="grid grid-cols-3 gap-2 py-2 border-b">
+        <p className="text-sm font-medium text-muted-foreground col-span-1">{label}</p>
+        {url ? (
+            <div className="col-span-2 space-y-2">
+                <Button variant="outline" size="sm" asChild>
+                    <Link href={url} target="_blank" rel="noopener noreferrer">
+                        <Eye className="mr-2 h-4 w-4" /> View Full Document
+                    </Link>
+                </Button>
+                {url.match(/\.(jpeg|jpg|gif|png|webp|avif)$/i) != null ? (
+                    <div className="w-full h-auto max-h-60 overflow-hidden rounded-md border">
+                        <Image src={url} alt={`${label} preview`} width={300} height={200} className="w-full h-full object-contain" />
+                    </div>
+                ) : (
+                    <div className="mt-2 text-sm text-muted-foreground flex items-center gap-2 p-2 rounded-md bg-muted">
+                        <FileIcon className="h-4 w-4" />
+                        <span>No preview available. Click to view.</span>
+                    </div>
+                )}
+            </div>
+        ) : (
+            <p className="text-sm col-span-2">Not Provided</p>
+        )}
+    </div>
+);
 
 export default function ApplicationsTable({ initialApplications }: { initialApplications: SerializableApplication[] }) {
   const [applications, setApplications] = React.useState(initialApplications);
@@ -143,7 +180,7 @@ export default function ApplicationsTable({ initialApplications }: { initialAppl
       </div>
 
       <Dialog open={isDetailsOpen} onOpenChange={setIsDetailsOpen}>
-        <DialogContent className="sm:max-w-lg">
+        <DialogContent className="sm:max-w-2xl md:max-w-3xl">
           <DialogHeader>
             <DialogTitle className="font-headline">Application Details</DialogTitle>
             <DialogDescription>
@@ -151,32 +188,35 @@ export default function ApplicationsTable({ initialApplications }: { initialAppl
             </DialogDescription>
           </DialogHeader>
           {selectedApplication && (
-            <div className="grid gap-4 py-4">
-              <div className="grid grid-cols-2 items-center gap-4">
-                <span className="text-sm font-medium text-muted-foreground">Full Name</span>
-                <span className="text-sm font-semibold">{selectedApplication.printName}</span>
-              </div>
-              <div className="grid grid-cols-2 items-center gap-4">
-                <span className="text-sm font-medium text-muted-foreground">Email</span>
-                <span className="text-sm">{selectedApplication.email}</span>
-              </div>
-              <div className="grid grid-cols-2 items-center gap-4">
-                <span className="text-sm font-medium text-muted-foreground">Phone</span>
-                <span className="text-sm">{selectedApplication.phoneNumber}</span>
-              </div>
-              <div className="grid grid-cols-2 items-center gap-4">
-                <span className="text-sm font-medium text-muted-foreground">Company Name</span>
-                <span className="text-sm">{selectedApplication.companyName}</span>
-              </div>
-               <div className="grid grid-cols-2 items-center gap-4">
-                <span className="text-sm font-medium text-muted-foreground">Submitted At</span>
-                <span className="text-sm">{format(new Date(selectedApplication.createdAt), 'PPPp')}</span>
-              </div>
-              <div className="grid grid-cols-2 items-center gap-4">
-                <span className="text-sm font-medium text-muted-foreground">Status</span>
-                <StatusBadge status={selectedApplication.status} />
-              </div>
-            </div>
+             <ScrollArea className="max-h-[70vh] pr-6">
+                <div className="space-y-4">
+                    <DetailItem label="Status" value={<StatusBadge status={selectedApplication.status} />} />
+                    <DetailItem label="Submitted At" value={format(new Date(selectedApplication.createdAt), 'PPPp')} />
+                    
+                    <h4 className="text-lg font-semibold pt-4">Applicant Info</h4>
+                    <DetailItem label="Printed Name" value={selectedApplication.printName} />
+                    <DetailItem label="Signature" value={<span className="font-serif italic">{selectedApplication.signature}</span>} />
+                    <DetailItem label="Email" value={selectedApplication.email} />
+                    <DetailItem label="Phone Number" value={selectedApplication.phoneNumber} />
+                    <DetailItem label="Date of Agreement" value={format(new Date(selectedApplication.date), 'PPP')} />
+
+                    <h4 className="text-lg font-semibold pt-4">Company & Carrier Details</h4>
+                    <DetailItem label="Dispatch Company" value={selectedApplication.companyName} />
+                    <DetailItem label="Carrier Full Name" value={selectedApplication.carrierFullName} />
+                    <DetailItem label="Carrier Company Name" value={selectedApplication.carrierCompanyName || 'N/A'} />
+                    <DetailItem label="MC Number" value={selectedApplication.mcNumber} />
+                    <DetailItem label="DOT Number" value={selectedApplication.dotNumber} />
+
+                    <h4 className="text-lg font-semibold pt-4">Services & Payment</h4>
+                    <DetailItem label="Selected Services" value={selectedApplication.services.join(', ')} />
+                    <DetailItem label="Service Fee Payment" value={selectedApplication.paymentMethod} />
+                    <DetailItem label="Carrier Payment Method" value={selectedApplication.howYouGetPaid} />
+
+                    <h4 className="text-lg font-semibold pt-4">Uploaded Documents</h4>
+                    <DocumentPreview label="Copy of Insurance" url={selectedApplication.insuranceCopy} />
+                    <DocumentPreview label="Factoring Documents" url={selectedApplication.factoringDocuments} />
+                </div>
+            </ScrollArea>
           )}
         </DialogContent>
       </Dialog>

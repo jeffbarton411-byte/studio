@@ -1,4 +1,5 @@
-import type { Timestamp } from "firebase/firestore";
+
+import type { Timestamp } from "firebase-admin/firestore";
 
 export enum ApplicationStatus {
   Submitted = 'Submitted',
@@ -33,6 +34,6 @@ export interface Application {
   date: string;
   email: string;
   howYouGetPaid: string;
-  createdAt: Timestamp;
+  createdAt: Timestamp | string;
   status: ApplicationStatus;
 }

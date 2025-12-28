@@ -1,3 +1,4 @@
+
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { CheckCircle, Copy } from "lucide-react";
@@ -15,7 +16,7 @@ export default function SuccessPage({ params }: { params: { id: string } }) {
           </div>
           <CardTitle className="font-headline text-3xl mt-4">Application Submitted!</CardTitle>
           <CardDescription>
-            Thank you for your submission. We have sent a confirmation email with a PDF copy of your data. You can use the tracking ID below to monitor your application status.
+            Thank you for your submission. We have sent a confirmation email with a copy of your data. You can use the tracking ID below to monitor your application status.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
@@ -28,7 +29,7 @@ export default function SuccessPage({ params }: { params: { id: string } }) {
               <Link href="/">Back to Home</Link>
             </Button>
             <Button asChild variant="outline">
-              <Link href="/admin">View Submissions</Link>
+              <Link href={`/track/${trackingId}`}>Track Application</Link>
             </Button>
           </div>
         </CardContent>

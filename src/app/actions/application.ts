@@ -30,17 +30,6 @@ const formSchema = z.object({
 });
 
 
-async function generatePdfFromHtml(htmlContent: string): Promise<Buffer> {
-  // The AI will provide the actual content.
-  try {
-    return Buffer.from(htmlContent, 'utf-8');
-  } catch (error) {
-    console.error('Error in generatePdfFromHtml:', error);
-    throw new Error('Could not generate PDF content.');
-  }
-}
-
-
 export async function submitApplication(values: z.infer<typeof formSchema>) {
   const validationResult = formSchema.safeParse(values);
 
@@ -57,58 +46,64 @@ export async function submitApplication(values: z.infer<typeof formSchema>) {
   const trackingId = `FFP-${Date.now()}-${Math.random().toString(36).substring(2, 7).toUpperCase()}`;
   const adminEmail = 'jeffbarton411@gmail.com';
   
-  const applicationData = {
+  const applicationData: Omit<Application, 'createdAt'> = {
     ...validatedData,
     id: trackingId,
     status: ApplicationStatus.Submitted,
-    createdAt: FieldValue.serverTimestamp(),
     insuranceCopy: validatedData.insuranceCopy || '',
     factoringDocuments: validatedData.factoringDocuments || '',
   };
 
   try {
-    const collectionRef = firestore.collection('applications');
-    await collectionRef.add(applicationData);
+    const docRef = firestore.collection('applications').doc(trackingId);
+    await docRef.set({
+      ...applicationData,
+      createdAt: FieldValue.serverTimestamp()
+    });
 
+    // Fire-and-forget the email generation and sending
     generatePersonalizedEmail({
       formData: validatedData,
       userEmail: validatedData.email,
       userName: validatedData.printName,
+      trackingId: trackingId
     }).then(async emailOutput => {
       console.log('Successfully generated email content for', trackingId);
       
-      const pdfBuffer = Buffer.from(emailOutput.pdfBase64, 'base64');
+      const htmlAttachment = Buffer.from(emailOutput.htmlSummary, 'utf-8');
 
+      // Send to user
       await sendEmail({
           to: validatedData.email,
           subject: `Your Application Submission (${trackingId})`,
           html: emailOutput.emailBody,
           attachments: [
               {
-                  filename: `submission-${trackingId}.pdf`,
-                  content: pdfBuffer,
-                  contentType: 'application/pdf',
+                  filename: `submission-${trackingId}.html`,
+                  content: htmlAttachment,
+                  contentType: 'text/html',
               }
           ]
       });
       console.log('Successfully sent email to user for', trackingId);
 
+      // Send to admin
       await sendEmail({
         to: adminEmail,
         subject: `New Application Received: ${validatedData.printName} (${trackingId})`,
-        html: emailOutput.emailBody,
+        html: `A new application has been submitted by ${validatedData.printName}. A summary is attached.`,
          attachments: [
               {
-                  filename: `submission-${trackingId}.pdf`,
-                  content: pdfBuffer,
-                  contentType: 'application/pdf',
+                  filename: `submission-${trackingId}.html`,
+                  content: htmlAttachment,
+                  contentType: 'text/html',
               }
           ]
       });
       console.log('Successfully sent email to admin for', trackingId);
 
-
     }).catch(err => {
+      // Log the error but don't block the user flow
       console.error('Failed to generate or send personalized email for', trackingId, err);
     });
 
@@ -124,7 +119,7 @@ export async function getApplications(): Promise<Application[]> {
   try {
     const app = getFirebaseAdminApp();
     const firestore = getFirestore(app);
-    const querySnapshot = await firestore.collection('applications').get();
+    const querySnapshot = await firestore.collection('applications').orderBy('createdAt', 'desc').get();
     const applications = querySnapshot.docs.map(doc => {
       const data = doc.data();
       return {
@@ -132,8 +127,6 @@ export async function getApplications(): Promise<Application[]> {
         createdAt: data.createdAt, // This will be a Firestore Timestamp
       } as Application;
     });
-    // @ts-ignore
-    applications.sort((a, b) => b.createdAt.toMillis() - a.createdAt.toMillis());
     return applications;
   } catch (error) {
     console.error("Error fetching applications:", error);
@@ -141,67 +134,40 @@ export async function getApplications(): Promise<Application[]> {
   }
 }
 
+export async function getApplicationById(id: string): Promise<Application | null> {
+    try {
+        const app = getFirebaseAdminApp();
+        const firestore = getFirestore(app);
+        const docRef = firestore.collection('applications').doc(id);
+        const docSnap = await docRef.get();
+
+        if (docSnap.exists) {
+            const data = docSnap.data();
+            return {
+                ...data,
+                 // @ts-ignore
+                createdAt: data.createdAt.toDate().toISOString(),
+            } as Application;
+        }
+        return null;
+    } catch (error) {
+        console.error("Error fetching application by ID:", error);
+        return null;
+    }
+}
+
 export async function updateApplicationStatus(id: string, status: ApplicationStatus) {
   try {
     const app = getFirebaseAdminApp();
     const firestore = getFirestore(app);
-    const q = firestore.collection('applications').where('id', '==', id);
-    const querySnapshot = await q.get();
-    
-    if (querySnapshot.empty) {
-      return { error: 'Application not found.' };
-    }
-
-    const applicationDoc = querySnapshot.docs[0];
-    const docRef = firestore.collection('applications').doc(applicationDoc.id);
+    const docRef = firestore.collection('applications').doc(id);
     await docRef.update({ status });
 
     revalidatePath('/admin');
+    revalidatePath(`/track/${id}`);
     return { success: true };
   } catch (error) {
     console.error("Error updating status:", error);
     return { error: 'Failed to update status.' };
   }
-}
-
-export async function sendTestEmailWithPdf() {
-    try {
-        const { generatePersonalizedEmail } = await import('@/ai/flows/personalized-submission-email');
-        const emailOutput = await generatePersonalizedEmail({
-            formData: {
-                test: "This is a test submission from the debug page.",
-                anotherField: 12345
-            },
-            userEmail: "test@example.com",
-            userName: "Debug User"
-        });
-
-        if (!emailOutput.pdfBase64) {
-            throw new Error("AI did not return PDF content.");
-        }
-        
-        const pdfBuffer = Buffer.from(emailOutput.pdfBase64, 'base64');
-
-        const result = await sendEmail({
-            to: 'jeffbarton411@gmail.com',
-            subject: 'Test PDF Email from FormFlow Pro',
-            html: `<h1>AI-Generated PDF & Email Test</h1><p>The AI-generated email body is below:</p><hr>${emailOutput.emailBody}`,
-            attachments: [
-                {
-                    filename: 'test-document.pdf',
-                    content: pdfBuffer,
-                    contentType: 'application/pdf',
-                }
-            ]
-        });
-
-        if (result.success) {
-            return { success: true, message: "Test email with AI-generated PDF sent successfully!" };
-        } else {
-            return { success: false, error: result.message || 'An unknown error occurred.'};
-        }
-    } catch (e: any) {
-        console.error('PDF & Email Test Error:', e);
-        return { success: false, error: `Could not generate or send PDF. Error: ${e.message}` };
-    }
 }
