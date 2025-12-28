@@ -12,7 +12,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { ArrowRight, ArrowLeft, Loader2, Upload, CheckCircle, AlertCircle, Eye } from "lucide-react";
+import { ArrowRight, ArrowLeft, Loader2, Upload, CheckCircle, AlertCircle, Eye, File as FileIcon } from "lucide-react";
 import { useFormContext } from "react-hook-form";
 import { getCloudinarySignature } from "@/app/actions/cloudinary";
 import { useToast } from "@/components/ui/use-toast";
@@ -123,10 +123,13 @@ const FileUpload = ({ name, label }: { name: "insuranceCopy" | "factoringDocumen
                   </Link>
                 </Button>
               </div>
-               {uploadedUrl.match(/\.(jpeg|jpg|gif|png)$/) != null ? (
+               {uploadedUrl.match(/\.(jpeg|jpg|gif|png|webp|avif)$/) != null ? (
                 <Image src={uploadedUrl} alt="Preview" width={100} height={100} className="mt-2 rounded-md object-cover" />
               ) : (
-                <div className="mt-2 text-sm text-muted-foreground">No preview available for this file type.</div>
+                <div className="mt-2 text-sm text-muted-foreground flex items-center gap-2">
+                  <FileIcon className="h-4 w-4" />
+                  <span>No visual preview available for this file type.</span>
+                </div>
               )}
             </div>
           )}
