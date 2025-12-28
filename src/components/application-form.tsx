@@ -4,7 +4,7 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { useTransition, useState } from "react";
+import { useTransition, useState, type ReactNode } from "react";
 import CompanyInfoForm, { companyInfoSchema } from "./forms/company-info-form";
 import CarrierDetailsForm, { carrierDetailsSchema } from "./forms/carrier-details-form";
 import { submitApplication } from "@/app/actions/application";
@@ -25,23 +25,31 @@ const fullSchema = companyInfoSchema
 
 type ApplicationFormValues = z.infer<typeof fullSchema>;
 
+// Helper function to get field names from a Zod schema
+const getStepFields = (step: number): (keyof ApplicationFormValues)[] => {
+    switch (step) {
+        case 1:
+            return Object.keys(companyInfoSchema.shape) as (keyof ApplicationFormValues)[];
+        case 2:
+            return Object.keys(carrierDetailsSchema.shape) as (keyof ApplicationFormValues)[];
+        case 3:
+            return Object.keys(paymentSchema.shape) as (keyof ApplicationFormValues)[];
+        case 4:
+            return Object.keys(documentUploadSchema.shape) as (keyof ApplicationFormValues)[];
+        case 5:
+            return Object.keys(reviewSchema.shape) as (keyof ApplicationFormValues)[];
+        default:
+            return [];
+    }
+};
+
 export default function ApplicationForm() {
   const [step, setStep] = useState(1);
   const [isPending, startTransition] = useTransition();
   const { toast } = useToast();
 
-  const schemas = [
-    companyInfoSchema,
-    carrierDetailsSchema,
-    paymentSchema,
-    documentUploadSchema,
-    reviewSchema,
-  ];
-
-  const currentSchema = schemas[step - 1];
-
   const form = useForm<ApplicationFormValues>({
-    resolver: zodResolver(currentSchema),
+    resolver: zodResolver(fullSchema),
     defaultValues: {
       companyName: "North Star Shipping LLC",
       carrierFullName: "",
@@ -63,7 +71,8 @@ export default function ApplicationForm() {
   });
 
   const nextStep = async () => {
-    const isValid = await form.trigger();
+    const fieldsToValidate = getStepFields(step);
+    const isValid = await form.trigger(fieldsToValidate);
     if (isValid) {
       setStep((prev) => prev + 1);
     } else {
@@ -121,7 +130,7 @@ export default function ApplicationForm() {
             Next <ArrowRight className="ml-2 h-4 w-4" />
           </Button>
         ) : (
-          <Button type="submit" size="lg" disabled={isPending} onClick={onSubmit}>
+          <Button type="submit" size="lg" disabled={isPending}>
             {isPending ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Submitting...
