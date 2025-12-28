@@ -1,0 +1,19 @@
+diff --git a/node_modules/batch/index.js b/node_modules/batch/index.js
+index 455e865..ba33ac9 100644
+--- a/node_modules/batch/index.js
++++ b/node_modules/batch/index.js
+@@ -3,11 +3,7 @@
+ /**
+  * Expose `Batch`.
+  */
+-
+-try {
+-  var EventEmitter = require('events').EventEmitter;
+-} catch (err) {
+-  var Emitter = require('emitter');
+-}
++var EventEmitter = require('events').EventEmitter;
++var Emitter = EventEmitter;
+ 
+ module.exports = Batch;
+ 
