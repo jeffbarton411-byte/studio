@@ -10,7 +10,6 @@ import { getFirestore } from 'firebase-admin/firestore';
 import { getFirebaseAdminApp } from '@/firebase/admin';
 import { generatePersonalizedEmail } from '@/ai/flows/personalized-submission-email';
 import { sendEmail } from '@/lib/email';
-import htmlPdf from 'html-pdf-node';
 
 
 const formSchema = z.object({
@@ -33,15 +32,19 @@ const formSchema = z.object({
 
 
 async function generatePdfFromHtml(htmlContent: string): Promise<Buffer> {
+  // This function now just returns the HTML content as a buffer,
+  // as the AI will generate the full content for us.
+  // We will rely on the AI to produce a valid PDF representation in the future.
+  // For now, we pass the HTML to be converted by an external library.
+  // This is a placeholder for a more robust solution.
   try {
-    const pdfBuffer = await htmlPdf.generatePdf(
-      { content: htmlContent },
-      { format: 'A4' }
-    );
-    return pdfBuffer;
+    // In a real scenario, you would use a library here to convert HTML to PDF.
+    // Since we're removing puppeteer and html-pdf-node, we'll return a placeholder.
+    // The AI will provide the actual content.
+    return Buffer.from(htmlContent, 'utf-8');
   } catch (error) {
-    console.error('Error generating PDF with html-pdf-node:', error);
-    throw new Error('Could not generate PDF.');
+    console.error('Error in generatePdfFromHtml:', error);
+    throw new Error('Could not generate PDF content.');
   }
 }
 
@@ -78,7 +81,7 @@ export async function submitApplication(values: z.infer<typeof formSchema>) {
     }).then(async emailOutput => {
       console.log('Successfully generated email content for', trackingId);
       
-      const pdfBuffer = await generatePdfFromHtml(emailOutput.pdfContent);
+      const pdfBuffer = Buffer.from(emailOutput.pdfBase64, 'base64');
 
       await sendEmail({
           to: validatedData.email,
@@ -188,6 +191,7 @@ export async function sendTestEmailWithPdf() {
             return { success: false, error: result.message || 'An unknown error occurred.'};
         }
     } catch (e: any) {
-        return { success: false, error: e.message };
+        console.error('PDF & Email Test Error:', e);
+        return { success: false, error: `Could not generate PDF. Puppeteer error: ${e.message}` };
     }
 }

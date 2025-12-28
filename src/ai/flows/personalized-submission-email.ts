@@ -22,7 +22,7 @@ export type PersonalizedEmailInput = z.infer<typeof PersonalizedEmailInputSchema
 
 const PersonalizedEmailOutputSchema = z.object({
   emailBody: z.string().describe('The personalized email body.'),
-  pdfContent: z.string().describe('A self-contained HTML document string to be converted to a PDF.'),
+  pdfBase64: z.string().describe('A Base64-encoded string representing the content of the PDF file.'),
 });
 
 export type PersonalizedEmailOutput = z.infer<typeof PersonalizedEmailOutputSchema>;
@@ -35,7 +35,7 @@ const personalizedEmailPrompt = ai.definePrompt({
   name: 'personalizedEmailPrompt',
   input: {schema: PersonalizedEmailInputSchema},
   output: {schema: PersonalizedEmailOutputSchema},
-  prompt: `You are an AI assistant that generates personalized thank you emails and formats submission data into a self-contained HTML document for PDF conversion.
+  prompt: `You are an AI assistant that generates personalized thank you emails and creates a PDF summary of a form submission.
 
   Given the following form data from user {{{userName}}} ({{{userEmail}}}):
 
@@ -44,7 +44,7 @@ const personalizedEmailPrompt = ai.definePrompt({
   {{/each}}
 
   1.  **Generate a personalized thank you email body.** The tone should be appreciative and professional.
-  2.  **Generate a self-contained HTML document string for the PDF.** This HTML should include all necessary styles inline or in a <style> tag. It must be a complete HTML document starting with <!DOCTYPE html>. It should be a clean, professional summary of the submitted data.
+  2.  **Generate a PDF as a Base64 encoded string.** To do this, first create a clean, professional, self-contained HTML document that summarizes all the submitted data. Then, convert this HTML into a PDF and encode the resulting binary data as a Base64 string for the 'pdfBase64' output field.
   `,
 });
 
