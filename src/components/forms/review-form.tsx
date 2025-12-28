@@ -120,6 +120,7 @@ export default function ReviewForm({ onBack }: ReviewFormProps) {
                   <FormControl>
                     <Button
                       variant={"outline"}
+                      disabled
                       className={cn(
                         "pl-3 text-left font-normal",
                         !field.value && "text-muted-foreground"

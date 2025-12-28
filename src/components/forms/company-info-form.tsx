@@ -52,9 +52,6 @@ export default function CompanyInfoForm({ }: CompanyInfoFormProps) {
                 </FormControl>
                 <SelectContent>
                   <SelectItem value="North Star Shipping LLC">North Star Shipping LLC</SelectItem>
-                  <SelectItem value="South Pole Logistics">South Pole Logistics</SelectItem>
-                  <SelectItem value="East Horizon Transport">East Horizon Transport</SelectItem>
-                  <SelectItem value="West Wind Haulers">West Wind Haulers</SelectItem>
                 </SelectContent>
               </Select>
               <p className="text-sm text-muted-foreground pt-1">(Hereinafter referred to as the {selectedCompany || "selected company"})</p>
