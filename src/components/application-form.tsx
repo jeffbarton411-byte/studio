@@ -15,25 +15,33 @@ import ReviewForm, { reviewSchema } from "./forms/review-form";
 import { Form } from "./ui/form";
 import { Button } from "./ui/button";
 import { ArrowLeft, ArrowRight, Loader2 } from "lucide-react";
+import { useToast } from "./ui/use-toast";
 
-const fullSchema = companyInfoSchema.merge(carrierDetailsSchema).merge(paymentSchema).merge(documentUploadSchema).merge(reviewSchema);
+const fullSchema = companyInfoSchema
+  .merge(carrierDetailsSchema)
+  .merge(paymentSchema)
+  .merge(documentUploadSchema)
+  .merge(reviewSchema);
 
 type ApplicationFormValues = z.infer<typeof fullSchema>;
 
 export default function ApplicationForm() {
   const [step, setStep] = useState(1);
   const [isPending, startTransition] = useTransition();
+  const { toast } = useToast();
 
   const schemas = [
     companyInfoSchema,
     carrierDetailsSchema,
     paymentSchema,
     documentUploadSchema,
-    reviewSchema
+    reviewSchema,
   ];
 
+  const currentSchema = schemas[step - 1];
+
   const form = useForm<ApplicationFormValues>({
-    resolver: zodResolver(schemas[step - 1]),
+    resolver: zodResolver(currentSchema),
     defaultValues: {
       companyName: "North Star Shipping LLC",
       carrierFullName: "",
@@ -49,12 +57,23 @@ export default function ApplicationForm() {
       printName: "",
       date: new Date().toISOString().split("T")[0],
       email: "",
-      howYouGetPaid: ""
+      howYouGetPaid: "",
     },
     mode: "onChange",
   });
 
-  const nextStep = () => setStep((prev) => prev + 1);
+  const nextStep = async () => {
+    const isValid = await form.trigger();
+    if (isValid) {
+      setStep((prev) => prev + 1);
+    } else {
+        toast({
+            title: "Incomplete Step",
+            description: "Please fill out all required fields before proceeding.",
+            variant: "destructive",
+        });
+    }
+  };
   const prevStep = () => setStep((prev) => prev - 1);
 
   const processForm = (values: ApplicationFormValues) => {
@@ -62,6 +81,25 @@ export default function ApplicationForm() {
       await submitApplication(values);
     });
   };
+  
+  const onSubmit = async () => {
+    const isValid = await form.trigger(Object.keys(reviewSchema.shape) as any);
+    if (isValid) {
+      // Validate the full schema before final submission
+      const result = fullSchema.safeParse(form.getValues());
+      if (result.success) {
+        processForm(result.data);
+      } else {
+        console.error("Full schema validation failed:", result.error.flatten().fieldErrors);
+        toast({
+          title: "Validation Error",
+          description: "Please go back and ensure all required fields are filled correctly.",
+          variant: "destructive",
+        });
+      }
+    }
+  };
+
 
   const StepContent = () => {
     switch (step) {
@@ -81,34 +119,18 @@ export default function ApplicationForm() {
   };
 
   const FormButtons = () => {
-    if (step === 1) {
-      return (
-        <div className="flex justify-end">
-          <Button type="button" size="lg" onClick={form.handleSubmit(nextStep)}>
+    return (
+      <div className="flex justify-between">
+        <Button type="button" size="lg" variant="outline" onClick={prevStep} disabled={step === 1}>
+          <ArrowLeft className="mr-2 h-4 w-4" /> Back
+        </Button>
+
+        {step < 5 ? (
+          <Button type="button" size="lg" onClick={nextStep}>
             Next <ArrowRight className="ml-2 h-4 w-4" />
           </Button>
-        </div>
-      );
-    }
-    if (step > 1 && step < 5) {
-      return (
-        <div className="flex justify-between">
-          <Button type="button" size="lg" variant="outline" onClick={prevStep}>
-            <ArrowLeft className="mr-2 h-4 w-4" /> Back
-          </Button>
-          <Button type="button" size="lg" onClick={form.handleSubmit(nextStep)}>
-            Next <ArrowRight className="ml-2 h-4 w-4" />
-          </Button>
-        </div>
-      );
-    }
-    if (step === 5) {
-      return (
-        <div className="flex justify-between mt-8">
-          <Button type="button" size="lg" variant="outline" onClick={prevStep}>
-            <ArrowLeft className="mr-2 h-4 w-4" /> Back
-          </Button>
-          <Button type="submit" size="lg" disabled={isPending}>
+        ) : (
+          <Button type="button" size="lg" disabled={isPending} onClick={onSubmit}>
             {isPending ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Submitting...
@@ -117,10 +139,9 @@ export default function ApplicationForm() {
               "Submit Application"
             )}
           </Button>
-        </div>
-      );
-    }
-    return null;
+        )}
+      </div>
+    );
   };
 
 
@@ -131,7 +152,7 @@ export default function ApplicationForm() {
       </div>
       <div className="p-8">
         <Form {...form}>
-            <form onSubmit={form.handleSubmit(processForm)} className="space-y-8">
+            <form onSubmit={(e) => e.preventDefault()} className="space-y-8">
                 <StepContent />
                 <FormButtons />
             </form>
