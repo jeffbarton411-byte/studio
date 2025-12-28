@@ -46,9 +46,7 @@ export const carrierDetailsSchema = z.object({
   mcNumber: z.string().min(1, { message: "MC Number is required." }),
   dotNumber: z.string().min(1, { message: "DOT Number is required." }),
   phoneNumber: z.string().min(1, { message: "Phone number is required." }),
-  services: z.array(z.string()).refine((value) => value.some((item) => item), {
-    message: "You have to select at least one service.",
-  }),
+  services: z.array(z.string()).min(1, "You have to select at least one service."),
 });
 
 type CarrierDetailsFormValues = z.infer<typeof carrierDetailsSchema>;
