@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { runFirestoreTest, runEmailTest } from './actions';
+import { runFirestoreTest, runEmailTest, runPdfAndEmailTest } from './actions';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Loader2 } from 'lucide-react';
 import Link from 'next/link';
@@ -13,6 +13,9 @@ export default function DebugPage() {
   
   const [emailResult, setEmailResult] = useState<string | null>(null);
   const [isEmailLoading, setIsEmailLoading] = useState(false);
+  
+  const [pdfEmailResult, setPdfEmailResult] = useState<string | null>(null);
+  const [isPdfEmailLoading, setIsPdfEmailLoading] = useState(false);
 
   const handleFirestoreTest = async () => {
     setIsFirestoreLoading(true);
@@ -38,6 +41,18 @@ export default function DebugPage() {
     setIsEmailLoading(false);
   };
 
+  const handlePdfAndEmailTest = async () => {
+    setIsPdfEmailLoading(true);
+    setPdfEmailResult(null);
+    const response = await runPdfAndEmailTest();
+    if (response.success) {
+      setPdfEmailResult(response.message!);
+    } else {
+      setPdfEmailResult(`Error: ${response.error}`);
+    }
+    setIsPdfEmailLoading(false);
+  };
+
   return (
     <div className="container mx-auto py-10">
         <div className="flex justify-between items-center mb-6">
@@ -51,7 +66,7 @@ export default function DebugPage() {
         Use this page to test various parts of the application infrastructure.
       </p>
 
-      <div className="grid md:grid-cols-2 gap-8">
+      <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
         <Card>
           <CardHeader>
             <CardTitle>Firestore Write Test</CardTitle>
@@ -83,7 +98,7 @@ export default function DebugPage() {
           <CardHeader>
             <CardTitle>Email Sending Test</CardTitle>
              <CardDescription>
-                Click the button to send a test email using the configured Gmail SMTP credentials.
+                Click the button to send a simple test email using the configured Gmail SMTP credentials.
             </CardDescription>
           </CardHeader>
           <CardContent className="flex flex-col items-start gap-4">
@@ -101,6 +116,33 @@ export default function DebugPage() {
               <div className="mt-4 p-4 w-full bg-muted rounded-lg border">
                 <h3 className="font-semibold">Result:</h3>
                 <pre className="text-sm whitespace-pre-wrap">{emailResult}</pre>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>PDF & Email Test</CardTitle>
+             <CardDescription>
+                Click to generate a test PDF and send it as an email attachment to the admin.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="flex flex-col items-start gap-4">
+             <Button onClick={handlePdfAndEmailTest} disabled={isPdfEmailLoading}>
+              {isPdfEmailLoading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Sending...
+                </>
+              ) : (
+                'Run PDF & Email Test'
+              )}
+            </Button>
+            {pdfEmailResult && (
+              <div className="mt-4 p-4 w-full bg-muted rounded-lg border">
+                <h3 className="font-semibold">Result:</h3>
+                <pre className="text-sm whitespace-pre-wrap">{pdfEmailResult}</pre>
               </div>
             )}
           </CardContent>

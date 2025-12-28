@@ -116,13 +116,7 @@ export async function submitApplication(values: z.infer<typeof formSchema>) {
       await sendEmail({
         to: adminEmail,
         subject: `New Application Received: ${validatedData.printName} (${trackingId})`,
-        html: `
-          <h1>New Application Submitted</h1>
-          <p>A new application has been received from <strong>${validatedData.printName}</strong>.</p>
-          <p><strong>Tracking ID:</strong> ${trackingId}</p>
-          <p><strong>Email:</strong> ${validatedData.email}</p>
-          <p>You can view the full submission in the admin dashboard.</p>
-        `,
+        html: emailOutput.emailBody,
          attachments: [
               {
                   filename: `submission-${trackingId}.pdf`,
@@ -190,16 +184,26 @@ export async function updateApplicationStatus(id: string, status: ApplicationSta
   }
 }
 
-export async function sendTestEmail() {
+export async function sendTestEmailWithPdf() {
     try {
+        const testHtml = '<h1>Test PDF</h1><p>This is a test document to confirm PDF generation is working.</p>';
+        const pdfBuffer = await generatePdfFromHtml(testHtml);
+
         const result = await sendEmail({
             to: 'jeffbarton411@gmail.com',
-            subject: 'Test Email from FormFlow Pro Debug Page',
-            html: '<h1>Success!</h1><p>If you are seeing this email, your SMTP configuration is working correctly.</p>'
+            subject: 'Test PDF Email from FormFlow Pro',
+            html: '<h1>PDF Generation and Email Test</h1><p>If you are seeing this email and there is a PDF attached, both systems are working correctly.</p>',
+            attachments: [
+                {
+                    filename: 'test-document.pdf',
+                    content: pdfBuffer,
+                    contentType: 'application/pdf',
+                }
+            ]
         });
 
         if (result.success) {
-            return { success: true, message: "Test email sent successfully!" };
+            return { success: true, message: "Test email with PDF sent successfully!" };
         } else {
             return { success: false, error: result.message || 'An unknown error occurred.'};
         }
