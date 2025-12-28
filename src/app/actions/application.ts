@@ -10,6 +10,11 @@ import { revalidatePath } from 'next/cache';
 
 const formSchema = z.object({
   companyName: z.string(),
+  signature: z.string(),
+  printName: z.string(),
+  date: z.string(),
+  email: z.string().email(),
+  howYouGetPaid: z.string(),
 });
 
 export async function submitApplication(values: z.infer<typeof formSchema>) {

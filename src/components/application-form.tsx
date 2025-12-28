@@ -10,9 +10,10 @@ import { submitApplication } from "@/app/actions/application";
 import ApplicationStepper from "./application-stepper";
 import PaymentForm, { paymentSchema } from "./forms/payment-form";
 import DocumentUploadForm, { documentUploadSchema } from "./forms/document-upload-form";
+import ReviewForm, { reviewSchema } from "./forms/review-form";
 import { Form } from "./ui/form";
 
-const fullSchema = companyInfoSchema.merge(carrierDetailsSchema).merge(paymentSchema).merge(documentUploadSchema);
+const fullSchema = companyInfoSchema.merge(carrierDetailsSchema).merge(paymentSchema).merge(documentUploadSchema).merge(reviewSchema);
 
 type ApplicationFormValues = z.infer<typeof fullSchema>;
 
@@ -30,6 +31,8 @@ export default function ApplicationForm() {
         return paymentSchema;
       case 4:
         return documentUploadSchema;
+      case 5:
+        return reviewSchema;
       default:
         return companyInfoSchema;
     }
@@ -49,6 +52,11 @@ export default function ApplicationForm() {
       paymentMethod: "",
       insuranceCopy: "",
       factoringDocuments: "",
+      signature: "",
+      printName: "",
+      date: new Date().toISOString().split("T")[0],
+      email: "",
+      howYouGetPaid: ""
     },
     context: { step },
   });
@@ -56,7 +64,7 @@ export default function ApplicationForm() {
   const nextStep = () => setStep((prev) => prev + 1);
   const prevStep = () => setStep((prev) => prev - 1);
 
-  const processForm = (values: ApplicationFormValues) => {
+  const processForm = (values: Partial<ApplicationFormValues>) => {
     if (step < 5) {
       nextStep();
     } else {
@@ -79,6 +87,7 @@ export default function ApplicationForm() {
                 {step === 2 && <CarrierDetailsForm onBack={prevStep} />}
                 {step === 3 && <PaymentForm onBack={prevStep} />}
                 {step === 4 && <DocumentUploadForm onBack={prevStep} />}
+                {step === 5 && <ReviewForm onBack={prevStep} />}
             </form>
         </Form>
       </div>

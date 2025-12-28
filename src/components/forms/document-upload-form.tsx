@@ -12,10 +12,12 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { ArrowRight, ArrowLeft, Loader2, Upload, CheckCircle, AlertCircle } from "lucide-react";
+import { ArrowRight, ArrowLeft, Loader2, Upload, CheckCircle, AlertCircle, Eye } from "lucide-react";
 import { useFormContext } from "react-hook-form";
 import { getCloudinarySignature } from "@/app/actions/cloudinary";
 import { useToast } from "@/components/ui/use-toast";
+import Link from "next/link";
+import Image from "next/image";
 
 export const documentUploadSchema = z.object({
   insuranceCopy: z.string().optional(),
@@ -29,10 +31,12 @@ interface DocumentUploadFormProps {
 type UploadStatus = "idle" | "uploading" | "success" | "error";
 
 const FileUpload = ({ name, label }: { name: "insuranceCopy" | "factoringDocuments", label: string }) => {
-  const { control, setValue } = useFormContext();
+  const { control, setValue, watch } = useFormContext();
   const [status, setStatus] = useState<UploadStatus>("idle");
   const [fileName, setFileName] = useState<string | null>(null);
   const { toast } = useToast();
+  
+  const uploadedUrl = watch(name);
 
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -98,6 +102,7 @@ const FileUpload = ({ name, label }: { name: "insuranceCopy" | "factoringDocumen
                 className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
                 onChange={handleFileUpload}
                 disabled={status === "uploading"}
+                accept="image/*,application/pdf"
               />
               <div className="w-full h-10 px-3 py-2 rounded-md border border-input bg-background flex items-center justify-between">
                 <span className="text-muted-foreground text-sm truncate">
@@ -108,6 +113,23 @@ const FileUpload = ({ name, label }: { name: "insuranceCopy" | "factoringDocumen
             </div>
           </FormControl>
           <FormMessage />
+          {uploadedUrl && (
+            <div className="mt-2 p-2 border rounded-md bg-muted/50">
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-medium">Preview:</span>
+                <Button variant="ghost" size="sm" asChild>
+                  <Link href={uploadedUrl} target="_blank" rel="noopener noreferrer">
+                    <Eye className="mr-2 h-4 w-4" /> View Document
+                  </Link>
+                </Button>
+              </div>
+               {uploadedUrl.match(/\.(jpeg|jpg|gif|png)$/) != null ? (
+                <Image src={uploadedUrl} alt="Preview" width={100} height={100} className="mt-2 rounded-md object-cover" />
+              ) : (
+                <div className="mt-2 text-sm text-muted-foreground">No preview available for this file type.</div>
+              )}
+            </div>
+          )}
         </FormItem>
       )}
     />
