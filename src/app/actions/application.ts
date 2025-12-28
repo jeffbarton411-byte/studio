@@ -2,11 +2,10 @@
 'use server';
 
 import { z } from 'zod';
-import { collection, addDoc, serverTimestamp, getDocs, query, where, doc, updateDoc } from 'firebase/firestore';
+import { getFirestore, Timestamp, FieldValue } from 'firebase-admin/firestore';
 import { redirect } from 'next/navigation';
 import { ApplicationStatus, type Application } from '@/lib/types';
 import { revalidatePath } from 'next/cache';
-import { getFirestore } from 'firebase-admin/firestore';
 import { getFirebaseAdminApp } from '@/firebase/admin';
 import { generatePersonalizedEmail } from '@/ai/flows/personalized-submission-email';
 import { sendEmail } from '@/lib/email';
@@ -62,13 +61,14 @@ export async function submitApplication(values: z.infer<typeof formSchema>) {
     ...validatedData,
     id: trackingId,
     status: ApplicationStatus.Submitted,
-    createdAt: serverTimestamp(),
+    createdAt: FieldValue.serverTimestamp(),
     insuranceCopy: validatedData.insuranceCopy || '',
     factoringDocuments: validatedData.factoringDocuments || '',
   };
 
   try {
-    await addDoc(collection(firestore, 'applications'), applicationData);
+    const collectionRef = firestore.collection('applications');
+    await collectionRef.add(applicationData);
 
     generatePersonalizedEmail({
       formData: validatedData,
@@ -124,14 +124,15 @@ export async function getApplications(): Promise<Application[]> {
   try {
     const app = getFirebaseAdminApp();
     const firestore = getFirestore(app);
-    const querySnapshot = await getDocs(collection(firestore, 'applications'));
+    const querySnapshot = await firestore.collection('applications').get();
     const applications = querySnapshot.docs.map(doc => {
       const data = doc.data();
       return {
         ...data,
-        createdAt: data.createdAt,
+        createdAt: data.createdAt, // This will be a Firestore Timestamp
       } as Application;
     });
+    // @ts-ignore
     applications.sort((a, b) => b.createdAt.toMillis() - a.createdAt.toMillis());
     return applications;
   } catch (error) {
@@ -144,16 +145,16 @@ export async function updateApplicationStatus(id: string, status: ApplicationSta
   try {
     const app = getFirebaseAdminApp();
     const firestore = getFirestore(app);
-    const q = query(collection(firestore, 'applications'), where('id', '==', id));
-    const querySnapshot = await getDocs(q);
+    const q = firestore.collection('applications').where('id', '==', id);
+    const querySnapshot = await q.get();
     
     if (querySnapshot.empty) {
       return { error: 'Application not found.' };
     }
 
     const applicationDoc = querySnapshot.docs[0];
-    const docRef = doc(firestore, 'applications', applicationDoc.id);
-    await updateDoc(docRef, { status });
+    const docRef = firestore.collection('applications').doc(applicationDoc.id);
+    await docRef.update({ status });
 
     revalidatePath('/admin');
     return { success: true };

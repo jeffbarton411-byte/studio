@@ -2,6 +2,7 @@ import { getApplications } from "@/app/actions/application";
 import ApplicationsTable from "@/components/admin/applications-table";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import type { Timestamp } from "firebase-admin/firestore";
 
 export default async function AdminPage() {
   const applications = await getApplications();
@@ -10,7 +11,8 @@ export default async function AdminPage() {
   // we convert them to a serializable format (ISO string).
   const serializableApplications = applications.map(app => ({
     ...app,
-    createdAt: app.createdAt.toDate().toISOString(),
+    // @ts-ignore
+    createdAt: (app.createdAt as Timestamp).toDate().toISOString(),
   }));
 
   return (
