@@ -1,12 +1,12 @@
 'use server';
 
 import { z } from 'zod';
-import { db } from '@/lib/firebase';
-import { collection, addDoc, serverTimestamp, getDocs, doc, updateDoc } from 'firebase/firestore';
+import { collection, addDoc, serverTimestamp, getDocs, query, where, getDoc, doc, updateDoc } from 'firebase/firestore';
 import { redirect } from 'next/navigation';
 import { generatePersonalizedEmail } from '@/ai/flows/personalized-submission-email';
 import { ApplicationStatus, type Application } from '@/lib/types';
 import { revalidatePath } from 'next/cache';
+import { getSdks } from '@/firebase';
 
 const formSchema = z.object({
   companyName: z.string(),
@@ -15,6 +15,15 @@ const formSchema = z.object({
   date: z.string(),
   email: z.string().email(),
   howYouGetPaid: z.string(),
+  carrierFullName: z.string(),
+  carrierCompanyName: z.string().optional(),
+  mcNumber: z.string(),
+  dotNumber: z.string(),
+  phoneNumber: z.string(),
+  services: z.array(z.string()),
+  paymentMethod: z.string(),
+  insuranceCopy: z.string().optional(),
+  factoringDocuments: z.string().optional(),
 });
 
 export async function submitApplication(values: z.infer<typeof formSchema>) {
@@ -24,10 +33,11 @@ export async function submitApplication(values: z.infer<typeof formSchema>) {
     return { error: 'Invalid data provided.' };
   }
 
+  const { firestore } = getSdks();
   const trackingId = `FFP-${Date.now()}-${Math.random().toString(36).substring(2, 7).toUpperCase()}`;
 
   try {
-    const docRef = await addDoc(collection(db, 'applications'), {
+    const docRef = await addDoc(collection(firestore, 'applications'), {
       id: trackingId,
       ...validationResult.data,
       status: ApplicationStatus.Submitted,
@@ -61,7 +71,8 @@ export async function submitApplication(values: z.infer<typeof formSchema>) {
 
 export async function getApplications(): Promise<Application[]> {
   try {
-    const querySnapshot = await getDocs(collection(db, 'applications'));
+    const { firestore } = getSdks();
+    const querySnapshot = await getDocs(collection(firestore, 'applications'));
     const applications = querySnapshot.docs.map(doc => {
       const data = doc.data();
       return {
@@ -71,7 +82,7 @@ export async function getApplications(): Promise<Application[]> {
       } as Application;
     });
     // sort by creation date
-    applications.sort((a, b) => b.createdAt.toMillis() - a.toMillis());
+    applications.sort((a, b) => b.createdAt.toMillis() - a.createdAt.toMillis());
     return applications;
   } catch (error) {
     console.error("Error fetching applications:", error);
@@ -81,14 +92,16 @@ export async function getApplications(): Promise<Application[]> {
 
 export async function updateApplicationStatus(id: string, status: ApplicationStatus) {
   try {
-    const querySnapshot = await getDocs(collection(db, 'applications'));
-    const applicationDoc = querySnapshot.docs.find(doc => doc.data().id === id);
-
-    if (!applicationDoc) {
+    const { firestore } = getSdks();
+    const q = query(collection(firestore, 'applications'), where('id', '==', id));
+    const querySnapshot = await getDocs(q);
+    
+    if (querySnapshot.empty) {
       return { error: 'Application not found.' };
     }
 
-    const docRef = doc(db, 'applications', applicationDoc.id);
+    const applicationDoc = querySnapshot.docs[0];
+    const docRef = doc(firestore, 'applications', applicationDoc.id);
     await updateDoc(docRef, { status });
 
     revalidatePath('/admin');

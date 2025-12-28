@@ -5,6 +5,7 @@ import { cn } from '@/lib/utils';
 import { Toaster } from '@/components/ui/toaster';
 import Header from '@/components/header';
 import Footer from '@/components/footer';
+import { FirebaseClientProvider } from '@/firebase';
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
 const spaceGrotesk = Space_Grotesk({ subsets: ['latin'], variable: '--font-space-grotesk' });
@@ -27,10 +28,12 @@ export default function RootLayout({
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet" />
       </head>
       <body className={cn('min-h-screen bg-background font-body antialiased flex flex-col', inter.variable, spaceGrotesk.variable)}>
-        {/* <Header /> */}
-        <main className="flex-1 flex flex-col">{children}</main>
-        {/* <Footer /> */}
-        <Toaster />
+        <FirebaseClientProvider>
+          {/* <Header /> */}
+          <main className="flex-1 flex flex-col">{children}</main>
+          {/* <Footer /> */}
+          <Toaster />
+        </FirebaseClientProvider>
       </body>
     </html>
   );

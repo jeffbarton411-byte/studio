@@ -28,7 +28,7 @@ import { Button } from '@/components/ui/button';
 import { MoreHorizontal, View, CheckCircle, CircleDashed, XCircle, Trash2, Hourglass } from 'lucide-react';
 import { ApplicationStatus, type Application } from '@/lib/types';
 import { format } from 'date-fns';
-import { useToast } from '@/hooks/use-toast';
+import { useToast } from '@/components/ui/use-toast';
 import { updateApplicationStatus } from '@/app/actions/application';
 import StatusBadge from './status-badge';
 
@@ -96,7 +96,7 @@ export default function ApplicationsTable({ initialApplications }: { initialAppl
               applications.map(app => (
                 <TableRow key={app.id}>
                   <TableCell className="font-mono text-sm">{app.id}</TableCell>
-                  <TableCell className="font-medium">{`${app.firstName} ${app.lastName}`}</TableCell>
+                  <TableCell className="font-medium">{app.printName}</TableCell>
                   <TableCell className="hidden md:table-cell text-muted-foreground">{app.email}</TableCell>
                   <TableCell className="hidden lg:table-cell text-muted-foreground">
                     {format(new Date(app.createdAt), 'MMM d, yyyy, h:mm a')}
@@ -154,7 +154,7 @@ export default function ApplicationsTable({ initialApplications }: { initialAppl
             <div className="grid gap-4 py-4">
               <div className="grid grid-cols-2 items-center gap-4">
                 <span className="text-sm font-medium text-muted-foreground">Full Name</span>
-                <span className="text-sm font-semibold">{`${selectedApplication.firstName} ${selectedApplication.lastName}`}</span>
+                <span className="text-sm font-semibold">{selectedApplication.printName}</span>
               </div>
               <div className="grid grid-cols-2 items-center gap-4">
                 <span className="text-sm font-medium text-muted-foreground">Email</span>
@@ -162,11 +162,11 @@ export default function ApplicationsTable({ initialApplications }: { initialAppl
               </div>
               <div className="grid grid-cols-2 items-center gap-4">
                 <span className="text-sm font-medium text-muted-foreground">Phone</span>
-                <span className="text-sm">{selectedApplication.phone}</span>
+                <span className="text-sm">{selectedApplication.phoneNumber}</span>
               </div>
               <div className="grid grid-cols-2 items-center gap-4">
-                <span className="text-sm font-medium text-muted-foreground">Address</span>
-                <span className="text-sm">{selectedApplication.address}</span>
+                <span className="text-sm font-medium text-muted-foreground">Company Name</span>
+                <span className="text-sm">{selectedApplication.companyName}</span>
               </div>
                <div className="grid grid-cols-2 items-center gap-4">
                 <span className="text-sm font-medium text-muted-foreground">Submitted At</span>
