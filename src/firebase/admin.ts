@@ -1,5 +1,6 @@
 import { initializeApp, getApps, getApp, type App } from 'firebase-admin/app';
 import { credential } from 'firebase-admin';
+import { serviceAccount } from './service-account';
 
 // IMPORTANT: DO NOT MODIFY THIS FUNCTION
 export function getFirebaseAdminApp(): App {
@@ -7,11 +8,9 @@ export function getFirebaseAdminApp(): App {
     return getApp();
   }
 
-  if (!process.env.FIREBASE_SERVICE_ACCOUNT) {
-    throw new Error('FIREBASE_SERVICE_ACCOUNT environment variable is not set.');
+  if (!serviceAccount || !serviceAccount.project_id) {
+    throw new Error('Service account credentials are not loaded correctly. Check src/firebase/service-account.ts');
   }
-  
-  const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
 
   return initializeApp({
     credential: credential.cert(serviceAccount),
