@@ -10,8 +10,7 @@ import { getFirestore } from 'firebase-admin/firestore';
 import { getFirebaseAdminApp } from '@/firebase/admin';
 import { generatePersonalizedEmail } from '@/ai/flows/personalized-submission-email';
 import { sendEmail } from '@/lib/email';
-import chromium from '@sparticuz/chromium';
-import puppeteer from 'puppeteer-core';
+import puppeteer from 'puppeteer';
 
 
 const formSchema = z.object({
@@ -36,13 +35,19 @@ const formSchema = z.object({
 async function generatePdfFromHtml(htmlContent: string): Promise<Buffer> {
   let browser = null;
   try {
-    // This is the recommended setup for Next.js/serverless environments
+    // Launch a new browser instance with minimal arguments for a serverless environment
     browser = await puppeteer.launch({
-      args: chromium.args,
-      defaultViewport: chromium.defaultViewport,
-      executablePath: await chromium.executablePath(),
-      headless: chromium.headless,
-      ignoreHTTPSErrors: true,
+      headless: true,
+      args: [
+        '--no-sandbox',
+        '--disable-setuid-sandbox',
+        '--disable-dev-shm-usage',
+        '--disable-accelerated-2d-canvas',
+        '--no-first-run',
+        '--no-zygote',
+        '--single-process', // This is crucial for some environments
+        '--disable-gpu',
+      ],
     });
 
     const page = await browser.newPage();
