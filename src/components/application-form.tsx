@@ -4,7 +4,7 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { useTransition, useState, useMemo } from "react";
+import { useTransition, useState } from "react";
 import CompanyInfoForm, { companyInfoSchema } from "./forms/company-info-form";
 import CarrierDetailsForm, { carrierDetailsSchema } from "./forms/carrier-details-form";
 import { submitApplication } from "@/app/actions/application";
@@ -78,27 +78,18 @@ export default function ApplicationForm() {
 
   const processForm = (values: ApplicationFormValues) => {
     startTransition(async () => {
-      await submitApplication(values);
-    });
-  };
-  
-  const onSubmit = async () => {
-    const isValid = await form.trigger(Object.keys(reviewSchema.shape) as any);
-    if (isValid) {
-      // Validate the full schema before final submission
-      const result = fullSchema.safeParse(form.getValues());
-      if (result.success) {
-        processForm(result.data);
-      } else {
-        console.error("Full schema validation failed:", result.error.flatten().fieldErrors);
+      const result = await submitApplication(values);
+      if (result?.error) {
         toast({
-          title: "Validation Error",
-          description: "Please go back and ensure all required fields are filled correctly.",
+          title: "Submission Error",
+          description: result.error,
           variant: "destructive",
         });
       }
-    }
+    });
   };
+
+  const onSubmit = form.handleSubmit(processForm);
 
 
   const StepContent = () => {
@@ -130,7 +121,7 @@ export default function ApplicationForm() {
             Next <ArrowRight className="ml-2 h-4 w-4" />
           </Button>
         ) : (
-          <Button type="button" size="lg" disabled={isPending} onClick={onSubmit}>
+          <Button type="submit" size="lg" disabled={isPending} onClick={onSubmit}>
             {isPending ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Submitting...
@@ -152,7 +143,7 @@ export default function ApplicationForm() {
       </div>
       <div className="p-8">
         <Form {...form}>
-            <form onSubmit={(e) => e.preventDefault()} className="space-y-8">
+            <form onSubmit={onSubmit} className="space-y-8">
                 <StepContent />
                 <FormButtons />
             </form>

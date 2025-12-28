@@ -1,7 +1,8 @@
+
 'use server';
 
 import { z } from 'zod';
-import { collection, addDoc, serverTimestamp, getDocs, query, where, getDoc, updateDoc } from 'firebase/firestore';
+import { collection, addDoc, serverTimestamp, getDocs, query, where, doc, updateDoc } from 'firebase/firestore';
 import { redirect } from 'next/navigation';
 import { ApplicationStatus, type Application } from '@/lib/types';
 import { revalidatePath } from 'next/cache';
@@ -38,18 +39,16 @@ export async function submitApplication(values: z.infer<typeof formSchema>) {
   const trackingId = `FFP-${Date.now()}-${Math.random().toString(36).substring(2, 7).toUpperCase()}`;
 
   try {
-    const docRef = await addDoc(collection(firestore, 'applications'), {
+    await addDoc(collection(firestore, 'applications'), {
       id: trackingId,
       ...validationResult.data,
       status: ApplicationStatus.Submitted,
       createdAt: serverTimestamp(),
     });
 
-    console.log('Document written with ID: ', docRef.id);
-
-  } catch (e) {
+  } catch (e: any) {
     console.error('Error adding document: ', e);
-    return { error: 'Failed to save application to the database.' };
+    return { error: e.message || 'Failed to save application to the database.' };
   }
 
   redirect(`/success/${trackingId}`);
