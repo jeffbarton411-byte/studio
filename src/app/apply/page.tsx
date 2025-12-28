@@ -1,6 +1,7 @@
 import ApplicationForm from "@/components/application-form";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
+import React from "react";
 
 const steps = [
   { step: 1, title: 'Personal Details', active: true },
@@ -12,8 +13,8 @@ function ApplicationStepper() {
   return (
     <div className="flex justify-between items-center mb-8">
       {steps.map((item, index) => (
-        <>
-          <div key={item.step} className="flex flex-col items-center">
+        <React.Fragment key={item.step}>
+          <div className="flex flex-col items-center">
             <div
               className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-lg ${
                 item.active ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'
@@ -24,7 +25,7 @@ function ApplicationStepper() {
             <p className={`mt-2 text-sm font-medium ${item.active ? 'text-primary' : 'text-muted-foreground'}`}>{item.title}</p>
           </div>
           {index < steps.length - 1 && <Separator className="flex-1 max-w-xs bg-border" />}
-        </>
+        </React.Fragment>
       ))}
     </div>
   );
