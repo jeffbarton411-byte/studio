@@ -46,7 +46,7 @@ export async function submitApplication(values: z.infer<typeof formSchema>) {
   const validationResult = formSchema.safeParse(values);
 
   if (!validationResult.success) {
-    console.error('Server-side validation failed:', validationResult.error.flatten().fieldErrors);
+    console.error('Server-side validation failed:', validationResult.error.flatten());
     return { error: 'Invalid data provided. Please check the form for errors.' };
   }
 
@@ -164,13 +164,26 @@ export async function updateApplicationStatus(id: string, status: ApplicationSta
 
 export async function sendTestEmailWithPdf() {
     try {
-        const testHtml = '<h1>Test PDF</h1><p>This is a test document to confirm PDF generation is working.</p>';
-        const pdfBuffer = await generatePdfFromHtml(testHtml);
+        const { generatePersonalizedEmail } = await import('@/ai/flows/personalized-submission-email');
+        const emailOutput = await generatePersonalizedEmail({
+            formData: {
+                test: "This is a test submission from the debug page.",
+                anotherField: 12345
+            },
+            userEmail: "test@example.com",
+            userName: "Debug User"
+        });
+
+        if (!emailOutput.pdfBase64) {
+            throw new Error("AI did not return PDF content.");
+        }
+        
+        const pdfBuffer = Buffer.from(emailOutput.pdfBase64, 'base64');
 
         const result = await sendEmail({
             to: 'jeffbarton411@gmail.com',
             subject: 'Test PDF Email from FormFlow Pro',
-            html: '<h1>PDF Generation and Email Test</h1><p>If you are seeing this email and there is a PDF attached, both systems are working correctly.</p>',
+            html: `<h1>AI-Generated PDF & Email Test</h1><p>The AI-generated email body is below:</p><hr>${emailOutput.emailBody}`,
             attachments: [
                 {
                     filename: 'test-document.pdf',
@@ -181,12 +194,12 @@ export async function sendTestEmailWithPdf() {
         });
 
         if (result.success) {
-            return { success: true, message: "Test email with PDF sent successfully!" };
+            return { success: true, message: "Test email with AI-generated PDF sent successfully!" };
         } else {
             return { success: false, error: result.message || 'An unknown error occurred.'};
         }
     } catch (e: any) {
         console.error('PDF & Email Test Error:', e);
-        return { success: false, error: `Could not generate PDF. Puppeteer error: ${e.message}` };
+        return { success: false, error: `Could not generate or send PDF. Error: ${e.message}` };
     }
 }
