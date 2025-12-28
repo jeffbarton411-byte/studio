@@ -7,7 +7,8 @@ const steps = [
   { step: 1, title: 'Company Info' },
   { step: 2, title: 'Carrier Details' },
   { step: 3, title: 'Payment' },
-  { step: 4, title: 'Review & Submit' },
+  { step: 4, title: 'Upload Documents' },
+  { step: 5, title: 'Review & Submit' },
 ];
 
 export default function ApplicationStepper({ currentStep = 1 }: { currentStep?: number }) {

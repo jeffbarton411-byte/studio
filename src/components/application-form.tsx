@@ -9,9 +9,10 @@ import CarrierDetailsForm, { carrierDetailsSchema } from "./forms/carrier-detail
 import { submitApplication } from "@/app/actions/application";
 import ApplicationStepper from "./application-stepper";
 import PaymentForm, { paymentSchema } from "./forms/payment-form";
+import DocumentUploadForm, { documentUploadSchema } from "./forms/document-upload-form";
 import { Form } from "./ui/form";
 
-const fullSchema = companyInfoSchema.merge(carrierDetailsSchema).merge(paymentSchema);
+const fullSchema = companyInfoSchema.merge(carrierDetailsSchema).merge(paymentSchema).merge(documentUploadSchema);
 
 type ApplicationFormValues = z.infer<typeof fullSchema>;
 
@@ -20,13 +21,18 @@ export default function ApplicationForm() {
   const [isPending, startTransition] = useTransition();
 
   const currentSchema = useMemo(() => {
-    if (step === 2) {
-      return carrierDetailsSchema;
-    }
-    if (step === 3) {
+    switch (step) {
+      case 1:
+        return companyInfoSchema;
+      case 2:
+        return carrierDetailsSchema;
+      case 3:
         return paymentSchema;
+      case 4:
+        return documentUploadSchema;
+      default:
+        return companyInfoSchema;
     }
-    return companyInfoSchema;
   }, [step]);
 
 
@@ -41,8 +47,9 @@ export default function ApplicationForm() {
       phoneNumber: "",
       services: [],
       paymentMethod: "",
+      insuranceCopy: "",
+      factoringDocuments: "",
     },
-    // Re-validate on step change
     context: { step },
   });
 
@@ -50,11 +57,10 @@ export default function ApplicationForm() {
   const prevStep = () => setStep((prev) => prev - 1);
 
   const processForm = (values: ApplicationFormValues) => {
-    if (step < 3) {
+    if (step < 5) {
       nextStep();
     } else {
       startTransition(async () => {
-        // To submit the full form, we need to merge the data from all steps
         const allData = form.getValues();
         await submitApplication({ ...allData, ...values });
       });
@@ -72,6 +78,7 @@ export default function ApplicationForm() {
                 {step === 1 && <CompanyInfoForm />}
                 {step === 2 && <CarrierDetailsForm onBack={prevStep} />}
                 {step === 3 && <PaymentForm onBack={prevStep} />}
+                {step === 4 && <DocumentUploadForm onBack={prevStep} />}
             </form>
         </Form>
       </div>
