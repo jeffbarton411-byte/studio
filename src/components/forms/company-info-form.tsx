@@ -67,22 +67,6 @@ export default function CompanyInfoForm({ }: CompanyInfoFormProps) {
             <p className="text-sm">Date: {format(today, "yyyy-MM-dd")}</p>
           </div>
         )}
-
-        <div className="flex justify-end">
-          <Button type="submit" size="lg" disabled={isPending}>
-            {isPending ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Processing...
-              </>
-            ) : (
-              <>
-              Next
-              <ArrowRight className="ml-2 h-4 w-4" />
-              </>
-            )}
-          </Button>
-        </div>
     </>
   );
 }
