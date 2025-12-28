@@ -3,35 +3,7 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import Image from "next/image";
 import React from "react";
-
-const steps = [
-  { step: 1, title: 'Company Info', active: true },
-  { step: 2, title: 'Carrier Details', active: false },
-  { step: 3, title: 'Payment', active: false },
-  { step: 4, title: 'Review & Submit', active: false },
-];
-
-function ApplicationStepper() {
-  return (
-    <div className="flex justify-between items-center mb-8 px-4 md:px-16">
-      {steps.map((item, index) => (
-        <React.Fragment key={item.step}>
-          <div className="flex flex-col items-center">
-            <div
-              className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-lg border-2 ${
-                item.active ? 'bg-primary text-primary-foreground border-primary' : 'bg-muted text-muted-foreground border-gray-300'
-              }`}
-            >
-              {item.step}
-            </div>
-            <p className={`mt-2 text-sm font-medium text-center ${item.active ? 'text-primary' : 'text-muted-foreground'}`}>{item.title}</p>
-          </div>
-          {index < steps.length - 1 && <Separator className="flex-1 max-w-xs bg-gray-300" />}
-        </React.Fragment>
-      ))}
-    </div>
-  );
-}
+import ApplicationStepper from "@/components/application-stepper";
 
 
 export default function ApplyPage() {
