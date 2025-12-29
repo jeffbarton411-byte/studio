@@ -91,7 +91,7 @@ export async function submitApplication(values: z.infer<typeof formSchema>) {
       await sendEmail({
         to: adminEmail,
         subject: `New Application Received: ${validatedData.printName} (${trackingId})`,
-        html: `A new application has been submitted by ${validatedData.printName}. A summary is attached.`,
+        html: emailOutput.emailBody,
          attachments: [
               {
                   filename: `submission-${trackingId}.html`,
