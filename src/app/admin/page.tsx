@@ -1,5 +1,5 @@
 import { getApplications } from "@/app/actions/application";
-import ApplicationsTable from "@/components/admin/applications-table";
+import ApplicationsTable from "@/app/admin/applications-table";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import type { Timestamp } from "firebase-admin/firestore";
