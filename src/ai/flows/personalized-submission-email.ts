@@ -53,6 +53,7 @@ const personalizedEmailPrompt = ai.definePrompt({
 *   A "Thank You" message.
 *   The user's tracking ID.
 *   A prominent "Track Your Submission" button that links to the provided \`trackingUrl\`.
+*   A highly visible warning for the user to download the attachment.
 *   A list of all the user's submitted data, neatly organized.
 *   A section for "Uploaded Documents" with links to view them.
 *   The company regards and footer.
@@ -77,6 +78,13 @@ const personalizedEmailPrompt = ai.definePrompt({
     <h1 style="font-size: 24px; text-align: center; margin-bottom: 20px;">Form Submission Confirmation</h1>
     <p>Dear {{{userName}}},</p>
     <p>Thank you for your submission. Your application has been received and is being processed. You can track the status of your application using the button below.</p>
+    
+    <div style="margin: 20px 0; padding: 15px; background-color: #fffbe6; border: 1px solid #ffe58f; border-radius: 4px; animation: blink-animation 1.5s infinite;">
+      <p style="margin: 0; font-weight: bold; color: #d46b08;">
+        &#9888; IMPORTANT: For best results, please DOWNLOAD the attached service agreement to your computer before viewing. Do not open it directly in Gmail.
+      </p>
+    </div>
+    
     <hr style="border: none; border-top: 1px solid #eeeeee; margin: 20px 0;">
     <h2>Submission Summary</h2>
     <p><strong>Tracking ID:</strong> {{{trackingId}}}</p>
