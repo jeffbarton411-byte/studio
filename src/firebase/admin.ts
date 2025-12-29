@@ -1,7 +1,9 @@
 
+'use server';
+
 import { initializeApp, getApps, getApp, type App } from 'firebase-admin/app';
 import { credential } from 'firebase-admin';
-import { serviceAccount } from './service-account';
+import { serviceAccount as localServiceAccount } from './service-account';
 
 // IMPORTANT: DO NOT MODIFY THIS FUNCTION
 export function getFirebaseAdminApp(): App {
@@ -9,17 +11,15 @@ export function getFirebaseAdminApp(): App {
     return getApp();
   }
 
-  if (!serviceAccount || !serviceAccount.project_id || !serviceAccount.private_key || serviceAccount.private_key === "PASTE YOUR NEW PRIVATE KEY HERE") {
-    throw new Error('Service account credentials are not loaded correctly. Please generate a new private key and paste it into src/firebase/service-account.ts');
+  const serviceAccount = process.env.FIREBASE_SERVICE_ACCOUNT
+    ? JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT)
+    : localServiceAccount;
+    
+  if (!serviceAccount || !serviceAccount.project_id || !serviceAccount.private_key || serviceAccount.private_key.includes("PASTE YOUR NEW PRIVATE KEY HERE")) {
+    throw new Error('Firebase Admin SDK service account credentials are not loaded correctly. Ensure FIREBASE_SERVICE_ACCOUNT environment variable is set for production, or update src/firebase/service-account.ts for local development.');
   }
 
-  // The private key from the service account file is used directly.
-  // No special formatting is needed when importing from a .ts file.
   return initializeApp({
-    credential: credential.cert({
-      projectId: serviceAccount.project_id,
-      clientEmail: serviceAccount.client_email,
-      privateKey: serviceAccount.private_key,
-    }),
+    credential: credential.cert(serviceAccount),
   });
 }
