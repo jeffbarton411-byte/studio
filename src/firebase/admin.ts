@@ -1,6 +1,4 @@
 
-'use server';
-
 import { initializeApp, getApps, getApp, type App } from 'firebase-admin/app';
 import { credential } from 'firebase-admin';
 import { serviceAccount as localServiceAccount } from './service-account';
