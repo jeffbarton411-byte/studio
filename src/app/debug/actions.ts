@@ -3,7 +3,6 @@
 import { getFirestore } from 'firebase-admin/firestore';
 import { getFirebaseAdminApp } from '@/firebase/admin';
 import { sendEmail } from '@/lib/email';
-import { sendTestEmailWithPdf as sendTestEmailWithPdfAction } from '@/app/actions/application';
 
 export async function runFirestoreTest() {
   console.log('Running Firestore test...');
@@ -39,9 +38,4 @@ export async function runEmailTest() {
     console.error('Email test failed:', error);
     return { success: false, error: error.message };
   }
-}
-
-export async function runPdfAndEmailTest() {
-  console.log('Running PDF and Email test...');
-  return await sendTestEmailWithPdfAction();
 }
