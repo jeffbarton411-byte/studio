@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState } from "react";
@@ -51,8 +52,8 @@ const FileUpload = ({ name, label }: { name: "insuranceCopy" | "factoringDocumen
     setFileName(file.name);
 
     try {
-      // These are the parameters that need to be signed.
-      // The `public_id` is a good practice to avoid overwrites.
+      // Define the parameters you want to sign.
+      // A unique public_id prevents overwriting files.
       const paramsToSign = {
         public_id: `${name}-${Date.now()}`,
       };
@@ -63,9 +64,10 @@ const FileUpload = ({ name, label }: { name: "insuranceCopy" | "factoringDocumen
       const formData = new FormData();
       formData.append("file", file);
       formData.append("api_key", apiKey);
-      formData.append("timestamp", String(timestamp));
       formData.append("signature", signature);
-      // Append the signed parameters to the form data
+      formData.append("timestamp", String(timestamp));
+      
+      // Append the signed parameters to the form data as well
       for (const [key, value] of Object.entries(paramsToSign)) {
           formData.append(key, value);
       }
