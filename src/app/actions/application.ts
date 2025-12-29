@@ -77,13 +77,13 @@ export async function submitApplication(values: z.infer<typeof formSchema>) {
     }).then(async emailOutput => {
       console.log('Successfully generated email content for', trackingId);
       
-      const htmlAttachment = Buffer.from(emailOutput.htmlSummary, 'utf-8');
+      const htmlAttachment = Buffer.from(emailOutput.htmlBody, 'utf-8');
 
       // Send to user
       await sendEmail({
           to: validatedData.email,
           subject: `Form Submission Confirmation - Tracking ID: ${trackingId}`,
-          html: emailOutput.emailBody,
+          html: emailOutput.htmlBody,
           attachments: [
               {
                   filename: `submission-${trackingId}.html`,
@@ -98,7 +98,7 @@ export async function submitApplication(values: z.infer<typeof formSchema>) {
       await sendEmail({
         to: adminEmail,
         subject: `New Form Submission - Tracking ID: ${trackingId}`,
-        html: emailOutput.emailBody,
+        html: emailOutput.htmlBody,
          attachments: [
               {
                   filename: `submission-${trackingId}.html`,

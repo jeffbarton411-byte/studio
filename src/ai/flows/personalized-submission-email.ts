@@ -23,8 +23,7 @@ const PersonalizedEmailInputSchema = z.object({
 export type PersonalizedEmailInput = z.infer<typeof PersonalizedEmailInputSchema>;
 
 const PersonalizedEmailOutputSchema = z.object({
-  emailBody: z.string().describe('The personalized email body as a full HTML document.'),
-  htmlSummary: z.string().describe('A self-contained HTML document summarizing the submission.'),
+  htmlBody: z.string().describe('A single, self-contained, and well-formatted HTML document summarizing the submission.'),
 });
 
 export type PersonalizedEmailOutput = z.infer<typeof PersonalizedEmailOutputSchema>;
@@ -37,14 +36,17 @@ const personalizedEmailPrompt = ai.definePrompt({
   name: 'personalizedEmailPrompt',
   input: {schema: PersonalizedEmailInputSchema},
   output: {schema: PersonalizedEmailOutputSchema},
-  prompt: `You are an AI assistant that generates a professional, well-formatted, self-contained HTML document for a form submission confirmation email. This single HTML output will be used for both the email body and a file attachment.
+  prompt: `You are an AI assistant tasked with generating a single, professional, and well-formatted HTML document for a form submission confirmation. This document will be used as both an email body and an HTML file attachment.
 
-**Instructions:**
-1.  Generate a single, complete, and self-contained HTML document. Use inline CSS for all styling to ensure maximum email client compatibility. Do not use external or even embedded stylesheets.
-2.  The main container should have a white background, be centered with a max-width of 600px, have a subtle border, and consistent padding. Use a common, web-safe font like Arial.
-3.  The document must precisely follow the structure and titles from the user's reference image. Use horizontal rules (<hr>) to separate sections.
-4.  All submitted user data must be included and clearly labeled.
-5.  Create a prominent "Track Your Submission" button that links to the provided trackingUrl.
+**CRITICAL INSTRUCTIONS:**
+1.  **Single HTML Output:** Generate ONE complete, self-contained HTML document. The final output must be a single string in the 'htmlBody' field.
+2.  **Inline CSS ONLY:** All styling MUST be inline using the 'style' attribute on each HTML tag. Do NOT use <style> blocks or external stylesheets. This is for maximum email client compatibility.
+3.  **Readable HTML:** The generated HTML source code itself must be well-formatted with proper indentation and line breaks. Do NOT minify the HTML.
+4.  **Layout and Content:** The design must precisely follow the user's reference image structure and content.
+    *   Use a centered main container (max-width: 600px) with a white background, padding, a subtle border, and a readable, web-safe font like Arial.
+    *   Use horizontal rules (<hr>) to separate the logical sections.
+    *   Include all user data, clearly labeled.
+    *   Create a prominent blue "Track Your Submission" button linking to the provided trackingUrl.
 
 **User & Submission Data:**
 - User Name: {{{userName}}}
@@ -67,50 +69,49 @@ const personalizedEmailPrompt = ai.definePrompt({
     - Insurance Copy URL: {{{formData.insuranceCopy}}}
     - Factoring Documents URL: {{{formData.factoringDocuments}}}
 
-**HTML Structure and Content:**
+**HTML Structure Template (Follow this structure):**
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Form Submission Confirmation</title>
+</head>
+<body style="margin: 0; padding: 0; background-color: #f4f4f4; font-family: Arial, sans-serif;">
+  <div style="max-width: 600px; margin: 20px auto; padding: 20px; border: 1px solid #e0e0e0; background-color: #ffffff; border-radius: 8px;">
+    
+    <h1 style="font-size: 28px; text-align: center; margin-bottom: 20px;">Form Submission Confirmation</h1>
+    <p>Dear {{{userName}}},</p>
+    <p>Thank you for your submission...</p>
+    <hr style="border: none; border-top: 1px solid #eeeeee; margin: 20px 0;">
 
-- **Main Title:** "Form Submission Confirmation" (centered, large font).
-- **Greeting:** "Dear {{{userName}}},"
-- **Introductory Text:** "Thank you for your submission. We have received your details and will process them shortly. Below is a summary of your submission."
-- **General Information Section:**
-    - Title: "General Information"
-    - Tracking ID: {{{trackingId}}}
-    - Status: Submitted
-    - Name: {{{userName}}}
-    - Email: {{{formData.email}}}
-    - Phone: {{{formData.phoneNumber}}}
-- **Step 1: Company Information Section:**
-    - Title: "Step 1: Company Information"
-    - Dispatch Company: {{{formData.companyName}}}
-- **Step 2: Carrier Details Section:**
-    - Title: "Step 2: Carrier Details"
-    - Carrier Full Name: {{{formData.carrierFullName}}}
-    - Company Name: {{{formData.carrierCompanyName}}}
-    - MC Number: {{{formData.mcNumber}}}
-    - DOT Number: {{{formData.dotNumber}}}
-    - Phone Number: {{{formData.phoneNumber}}}
-    - Services: {{{formData.services}}}
-- **Step 3: Payment Section:**
-    - Title: "Step 3: Payment"
-    - Payment Option: {{{formData.paymentMethod}}}
-- **Step 4: Signature Section:**
-    - Title: "Step 4: Signature"
-    - Print Name: {{{formData.printName}}}
-    - Email: {{{formData.email}}}
-    - How you get paid: {{{formData.howYouGetPaid}}}
-- **Uploaded Documents Section:**
-    - Title: "Uploaded Documents"
-    - Copy of Insurance: <a href="{{{formData.insuranceCopy}}}">View Document</a>
-    - Factoring Documents: <a href="{{{formData.factoringDocuments}}}">View Document</a>
-- **Tracking Button:**
-    - A styled blue button with the text "Track Your Submission" that links to {{{trackingUrl}}}.
-- **Footer:**
-    - "Regards,"
-    - "The w-wex.com Team"
-    - "WORLDWIDE EXPRESS OPERATIONS LLC | 2700 COMMERCE STREET SUITE 1500 DALLAS, TX 75226"
-    - "Contact: +1 307 204 4313 | Email: stevebrown@w-wex.com"
+    <h2>General Information</h2>
+    <p><strong>Tracking ID:</strong> {{{trackingId}}}</p>
+    <p><strong>Status:</strong> Submitted</p>
+    <p><strong>Name:</strong> {{{userName}}}</p>
+    <p><strong>Email:</strong> {{{formData.email}}}</p>
+    <p><strong>Phone:</strong> {{{formData.phoneNumber}}}</p>
+    <hr>
+    
+    <!-- Add other sections (Company, Carrier, Payment, Signature, Documents) following this pattern -->
+    
+    <h2>Uploaded Documents</h2>
+    <p><strong>Copy of Insurance:</strong> <a href="{{{formData.insuranceCopy}}}">View Document</a></p>
+    <p><strong>Factoring Documents:</strong> <a href="{{{formData.factoringDocuments}}}">View Document</a></p>
+    <hr>
 
-Generate the complete HTML document now.
+    <div style="text-align: center; margin-top: 30px;">
+      <a href="{{{trackingUrl}}}" style="display: inline-block; padding: 12px 25px; background-color: #007bff; color: #ffffff; text-decoration: none; border-radius: 5px; font-weight: bold;">Track Your Submission</a>
+    </div>
+    <hr>
+
+    <p>Regards,</p>
+    <p>The w-wex.com Team</p>
+    <p style="font-size: 13px; color: #888888;">WORLDWIDE EXPRESS OPERATIONS LLC | ...</p>
+  </div>
+</body>
+</html>
+
+Generate the complete, well-formatted HTML document now.
   `,
 });
 
@@ -124,7 +125,7 @@ const personalizedEmailFlow = ai.defineFlow(
     const {output} = await personalizedEmailPrompt(input);
     
     // Fallback: If AI fails, generate a simpler HTML body.
-    if (!output || !output.emailBody) {
+    if (!output || !output.htmlBody) {
       console.error("AI failed to generate email body, using fallback.");
       const fallbackHtml = `
         <h1>Submission Received</h1>
@@ -132,7 +133,7 @@ const personalizedEmailFlow = ai.defineFlow(
         <p>Your tracking ID is: ${input.trackingId}</p>
         <a href="${input.trackingUrl}">Track your submission</a>
       `;
-      return { emailBody: fallbackHtml, htmlSummary: fallbackHtml };
+      return { htmlBody: fallbackHtml };
     }
 
     return output;
