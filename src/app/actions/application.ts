@@ -67,17 +67,19 @@ export async function submitApplication(values: z.infer<typeof formSchema>) {
     const trackingUrl = `${protocol}://${host}/track/${trackingId}`;
 
 
-    // Fire-and-forget the email generation and sending
-    generatePersonalizedEmail({
-      formData: validatedData,
-      userEmail: validatedData.email,
-      userName: validatedData.printName,
-      trackingId: trackingId,
-      trackingUrl: trackingUrl,
-    }).then(async emailOutput => {
+    // Await email generation and sending to ensure it completes
+    try {
+      const emailOutput = await generatePersonalizedEmail({
+        formData: validatedData,
+        userEmail: validatedData.email,
+        userName: validatedData.printName,
+        trackingId: trackingId,
+        trackingUrl: trackingUrl,
+      });
+
       console.log('Successfully generated email content for', trackingId);
       
-      const htmlAttachment = Buffer.from(emailOutput.htmlBody, 'utf-8');
+      const htmlAttachment = Buffer.from(emailOutput.htmlAttachment, 'utf-8');
 
       // Send to user
       await sendEmail({
@@ -98,7 +100,7 @@ export async function submitApplication(values: z.infer<typeof formSchema>) {
       await sendEmail({
         to: adminEmail,
         subject: `New Form Submission - Tracking ID: ${trackingId}`,
-        html: emailOutput.htmlBody,
+        html: emailOutput.htmlBody, // Send rich HTML to admin too
          attachments: [
               {
                   filename: `submission-${trackingId}.html`,
@@ -109,10 +111,11 @@ export async function submitApplication(values: z.infer<typeof formSchema>) {
       });
       console.log('Successfully sent email to admin for', trackingId);
 
-    }).catch(err => {
+    } catch (err) {
       // Log the error but don't block the user flow
       console.error('Failed to generate or send personalized email for', trackingId, err);
-    });
+      // We don't return an error to the user, as the main submission was successful
+    }
 
   } catch (e: any) {
     console.error('Error adding document: ', e);
@@ -178,3 +181,5 @@ export async function updateApplicationStatus(id: string, status: ApplicationSta
     return { error: 'Failed to update status.' };
   }
 }
+
+    
