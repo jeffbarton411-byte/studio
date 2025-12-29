@@ -37,7 +37,7 @@ export default function SuccessPage({ params }: { params: { id: string } }) {
           <CardTitle className="font-headline text-3xl mt-4">Application Submitted!</CardTitle>
           <CardDescription>
             Thank you for your submission. We have sent a confirmation email with a copy of your data. You can use the tracking ID below to monitor your application status.
-          </-CardDescription>
+          </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
           <div className="p-4 bg-muted rounded-lg border border-dashed">
