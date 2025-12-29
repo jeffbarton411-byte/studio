@@ -2,13 +2,14 @@
 'use server';
 
 import { z } from 'zod';
-import { getFirestore, Timestamp, FieldValue } from 'firebase-admin/firestore';
+import { getFirestore, FieldValue } from 'firebase-admin/firestore';
 import { redirect } from 'next/navigation';
 import { ApplicationStatus, type Application } from '@/lib/types';
 import { revalidatePath } from 'next/cache';
 import { getFirebaseAdminApp } from '@/firebase/admin';
 import { generatePersonalizedEmail } from '@/ai/flows/personalized-submission-email';
 import { sendEmail } from '@/lib/email';
+import { headers } from 'next/headers';
 
 
 const formSchema = z.object({
@@ -61,12 +62,18 @@ export async function submitApplication(values: z.infer<typeof formSchema>) {
       createdAt: FieldValue.serverTimestamp()
     });
 
+    const host = headers().get('host');
+    const protocol = process.env.NODE_ENV === 'development' ? 'http' : 'https';
+    const trackingUrl = `${protocol}://${host}/track/${trackingId}`;
+
+
     // Fire-and-forget the email generation and sending
     generatePersonalizedEmail({
       formData: validatedData,
       userEmail: validatedData.email,
       userName: validatedData.printName,
-      trackingId: trackingId
+      trackingId: trackingId,
+      trackingUrl: trackingUrl,
     }).then(async emailOutput => {
       console.log('Successfully generated email content for', trackingId);
       
@@ -75,7 +82,7 @@ export async function submitApplication(values: z.infer<typeof formSchema>) {
       // Send to user
       await sendEmail({
           to: validatedData.email,
-          subject: `Your Application Submission (${trackingId})`,
+          subject: `Form Submission Confirmation - Tracking ID: ${trackingId}`,
           html: emailOutput.emailBody,
           attachments: [
               {
@@ -90,7 +97,7 @@ export async function submitApplication(values: z.infer<typeof formSchema>) {
       // Send to admin
       await sendEmail({
         to: adminEmail,
-        subject: `New Application Received: ${validatedData.printName} (${trackingId})`,
+        subject: `New Form Submission - Tracking ID: ${trackingId}`,
         html: emailOutput.emailBody,
          attachments: [
               {
