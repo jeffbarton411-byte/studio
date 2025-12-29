@@ -22,7 +22,7 @@ const DetailSection = ({ title, children }: { title: string, children: React.Rea
 const DetailItem = ({ label, value }: { label: string; value?: React.ReactNode }) => (
   <div className="flex flex-col sm:flex-row sm:justify-between py-2 border-b last:border-none">
     <p className="text-sm font-medium text-muted-foreground">{label}</p>
-    <p className="text-sm text-right font-medium">{value || 'N/A'}</p>
+    <div className="text-sm text-right font-medium">{value || 'N/A'}</div>
   </div>
 );
 
