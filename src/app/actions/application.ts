@@ -63,9 +63,14 @@ export async function submitApplication(values: z.infer<typeof formSchema>) {
     });
 
     const host = headers().get('host');
-    const protocol = process.env.NODE_ENV === 'development' ? 'http' : 'https';
-    const trackingUrl = `${protocol}://${host}/track/${trackingId}`;
-    const logoUrl = `${protocol}://${host}/logo.png`;
+    const isDevelopment = process.env.NODE_ENV === 'development';
+    const protocol = isDevelopment ? 'http' : 'https';
+    
+    // Use the hardcoded production URL when not in development
+    const baseUrl = isDevelopment ? `${protocol}://${host}` : 'https://redwoodlogistics.vercel.app';
+    
+    const trackingUrl = `${baseUrl}/track/${trackingId}`;
+    const logoUrl = `${baseUrl}/logo.png`;
 
 
     // Await email generation and sending to ensure it completes
