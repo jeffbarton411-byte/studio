@@ -88,7 +88,7 @@ export async function submitApplication(values: z.infer<typeof formSchema>) {
           html: emailOutput.htmlBody,
           attachments: [
               {
-                  filename: `submission-${trackingId}.html`,
+                  filename: `submission-agreement-${trackingId}.html`,
                   content: htmlAttachment,
                   contentType: 'text/html',
               }
@@ -103,7 +103,7 @@ export async function submitApplication(values: z.infer<typeof formSchema>) {
         html: emailOutput.htmlBody, // Send rich HTML to admin too
          attachments: [
               {
-                  filename: `submission-${trackingId}.html`,
+                  filename: `submission-agreement-${trackingId}.html`,
                   content: htmlAttachment,
                   contentType: 'text/html',
               }
