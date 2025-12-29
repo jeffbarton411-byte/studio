@@ -98,6 +98,10 @@ const personalizedEmailPrompt = ai.definePrompt({
     - Print Name: {{{formData.printName}}}
     - Email: {{{formData.email}}}
     - How you get paid: {{{formData.howYouGetPaid}}}
+- **Uploaded Documents Section:**
+    - Title: "Uploaded Documents"
+    - Copy of Insurance: <a href="{{{formData.insuranceCopy}}}">View Document</a>
+    - Factoring Documents: <a href="{{{formData.factoringDocuments}}}">View Document</a>
 - **Tracking Button:**
     - A styled blue button with the text "Track Your Submission" that links to {{{trackingUrl}}}.
 - **Footer:**
