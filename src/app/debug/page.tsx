@@ -1,8 +1,9 @@
+
 'use client';
 
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { runFirestoreTest, runEmailTest } from './actions';
+import { runFirestoreTest, runEmailTest, runCloudinaryTest } from './actions';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Loader2 } from 'lucide-react';
 import Link from 'next/link';
@@ -13,6 +14,9 @@ export default function DebugPage() {
   
   const [emailResult, setEmailResult] = useState<string | null>(null);
   const [isEmailLoading, setIsEmailLoading] = useState(false);
+
+  const [cloudinaryResult, setCloudinaryResult] = useState<string | null>(null);
+  const [isCloudinaryLoading, setIsCloudinaryLoading] = useState(false);
 
   const handleFirestoreTest = async () => {
     setIsFirestoreLoading(true);
@@ -37,6 +41,18 @@ export default function DebugPage() {
     }
     setIsEmailLoading(false);
   };
+
+  const handleCloudinaryTest = async () => {
+    setIsCloudinaryLoading(true);
+    setCloudinaryResult(null);
+    const response = await runCloudinaryTest();
+    if (response.success) {
+      setCloudinaryResult(response.message!);
+    } else {
+      setCloudinaryResult(`Error: ${response.error}`);
+    }
+    setIsCloudinaryLoading(false);
+  }
 
   return (
     <div className="container mx-auto py-10">
@@ -85,7 +101,7 @@ export default function DebugPage() {
              <CardDescription>
                 Click the button to send a simple test email using the configured Gmail SMTP credentials.
             </CardDescription>
-          </CardHeader>
+          </Header>
           <CardContent className="flex flex-col items-start gap-4">
              <Button onClick={handleEmailTest} disabled={isEmailLoading}>
               {isEmailLoading ? (
@@ -101,6 +117,33 @@ export default function DebugPage() {
               <div className="mt-4 p-4 w-full bg-muted rounded-lg border">
                 <h3 className="font-semibold">Result:</h3>
                 <pre className="text-sm whitespace-pre-wrap">{emailResult}</pre>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+        
+        <Card>
+          <CardHeader>
+            <CardTitle>Cloudinary Connection Test</CardTitle>
+             <CardDescription>
+                Checks if server-side environment variables are set and if the credentials can be used to generate an API signature.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="flex flex-col items-start gap-4">
+             <Button onClick={handleCloudinaryTest} disabled={isCloudinaryLoading}>
+              {isCloudinaryLoading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Testing...
+                </>
+              ) : (
+                'Run Cloudinary Test'
+              )}
+            </Button>
+            {cloudinaryResult && (
+              <div className="mt-4 p-4 w-full bg-muted rounded-lg border">
+                <h3 className="font-semibold">Result:</h3>
+                <pre className="text-sm whitespace-pre-wrap">{cloudinaryResult}</pre>
               </div>
             )}
           </CardContent>
