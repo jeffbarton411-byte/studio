@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState } from "react";
@@ -12,7 +11,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { ArrowRight, ArrowLeft, Loader2, Upload, CheckCircle, AlertCircle, Eye, File as FileIcon } from "lucide-react";
+import { Upload, CheckCircle, AlertCircle, Eye, File as FileIcon, Loader2 } from "lucide-react";
 import { useFormContext } from "react-hook-form";
 import { getCloudinarySignature } from "@/app/actions/cloudinary";
 import { useToast } from "@/components/ui/use-toast";
@@ -36,39 +35,56 @@ const FileUpload = ({ name, label }: { name: "insuranceCopy" | "factoringDocumen
   const { toast } = useToast();
   
   const uploadedUrl = watch(name);
+  const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
+  const apiKey = process.env.NEXT_PUBLIC_CLOUDINARY_API_KEY;
 
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
 
+    if (!cloudName || !apiKey) {
+      toast({ title: "Error", description: "Cloudinary configuration is missing on the client.", variant: "destructive" });
+      return;
+    }
+
     setStatus("uploading");
     setFileName(file.name);
 
     try {
-      const { signature, timestamp } = await getCloudinarySignature();
+      const timestamp = Math.round(new Date().getTime() / 1000);
+
+      // These are the parameters that need to be signed
+      const paramsToSign = {
+        timestamp: timestamp,
+      };
+
+      // Get the signature from the server
+      const { signature } = await getCloudinarySignature(paramsToSign);
 
       const formData = new FormData();
       formData.append("file", file);
+      formData.append("api_key", apiKey);
+      formData.append("timestamp", String(timestamp));
       formData.append("signature", signature);
-      formData.append("timestamp", timestamp);
-      formData.append("api_key", process.env.NEXT_PUBLIC_CLOUDINARY_API_KEY as string);
 
       const response = await fetch(
-        `https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/auto/upload`,
+        `https://api.cloudinary.com/v1_1/${cloudName}/auto/upload`,
         {
           method: "POST",
           body: formData,
         }
       );
+      
+      const data = await response.json();
 
       if (response.ok) {
-        const data = await response.json();
         setValue(name, data.secure_url, { shouldValidate: true });
         setStatus("success");
         toast({ title: "Success", description: `${label} uploaded successfully.` });
       } else {
         setStatus("error");
-        toast({ title: "Error", description: `Failed to upload ${label}.`, variant: "destructive" });
+        console.error("Cloudinary upload error:", data);
+        toast({ title: "Error", description: `Failed to upload ${label}: ${data.error.message}`, variant: "destructive" });
       }
     } catch (error) {
       console.error("Upload failed", error);
