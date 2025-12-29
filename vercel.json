@@ -4,10 +4,5 @@
     "env": {
       "GENKIT_ENV": "production"
     }
-  },
-  "functions": {
-    "src/ai/dev.ts": {
-      "includeFiles": "src/ai/flows/**"
-    }
   }
 }
