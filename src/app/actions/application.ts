@@ -79,9 +79,9 @@ export async function submitApplication(values: z.infer<typeof formSchema>) {
           html: emailOutput.emailBody,
           attachments: [
               {
-                  filename: `submission-${trackingId}.html`,
+                  filename: `submission-${trackingId}.pdf`,
                   content: htmlAttachment,
-                  contentType: 'text/html',
+                  contentType: 'application/pdf',
               }
           ]
       });
@@ -94,9 +94,9 @@ export async function submitApplication(values: z.infer<typeof formSchema>) {
         html: emailOutput.emailBody,
          attachments: [
               {
-                  filename: `submission-${trackingId}.html`,
+                  filename: `submission-${trackingId}.pdf`,
                   content: htmlAttachment,
-                  contentType: 'text/html',
+                  contentType: 'application/pdf',
               }
           ]
       });
