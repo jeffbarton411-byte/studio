@@ -31,8 +31,8 @@ import { ApplicationStatus, type Application } from '@/lib/types';
 import { format } from 'date-fns';
 import { useToast } from '@/components/ui/use-toast';
 import { updateApplicationStatus } from '@/app/actions/application';
-import StatusBadge from './status-badge';
-import { ScrollArea } from '../ui/scroll-area';
+import StatusBadge from '@/components/admin/status-badge';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import Link from 'next/link';
 import Image from 'next/image';
 
