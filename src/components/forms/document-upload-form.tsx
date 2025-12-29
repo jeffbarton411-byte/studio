@@ -51,22 +51,25 @@ const FileUpload = ({ name, label }: { name: "insuranceCopy" | "factoringDocumen
     setFileName(file.name);
 
     try {
-      const timestamp = Math.round(new Date().getTime() / 1000);
-
-      // These are the parameters that need to be signed
+      // These are the parameters that need to be signed.
+      // The `public_id` is a good practice to avoid overwrites.
       const paramsToSign = {
-        timestamp: timestamp,
+        public_id: `${name}-${Date.now()}`,
       };
 
-      // Get the signature from the server
-      const { signature } = await getCloudinarySignature(paramsToSign);
+      // Get the signature and timestamp from the server
+      const { signature, timestamp } = await getCloudinarySignature(paramsToSign);
 
       const formData = new FormData();
       formData.append("file", file);
       formData.append("api_key", apiKey);
       formData.append("timestamp", String(timestamp));
       formData.append("signature", signature);
-
+      // Append the signed parameters to the form data
+      for (const [key, value] of Object.entries(paramsToSign)) {
+          formData.append(key, value);
+      }
+      
       const response = await fetch(
         `https://api.cloudinary.com/v1_1/${cloudName}/auto/upload`,
         {
