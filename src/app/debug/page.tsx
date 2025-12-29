@@ -101,7 +101,7 @@ export default function DebugPage() {
              <CardDescription>
                 Click the button to send a simple test email using the configured Gmail SMTP credentials.
             </CardDescription>
-          </Header>
+          </CardHeader>
           <CardContent className="flex flex-col items-start gap-4">
              <Button onClick={handleEmailTest} disabled={isEmailLoading}>
               {isEmailLoading ? (
