@@ -65,6 +65,7 @@ export async function submitApplication(values: z.infer<typeof formSchema>) {
     const host = headers().get('host');
     const protocol = process.env.NODE_ENV === 'development' ? 'http' : 'https';
     const trackingUrl = `${protocol}://${host}/track/${trackingId}`;
+    const logoUrl = `${protocol}://${host}/logo.png`;
 
 
     // Await email generation and sending to ensure it completes
@@ -75,6 +76,7 @@ export async function submitApplication(values: z.infer<typeof formSchema>) {
         userName: validatedData.printName,
         trackingId: trackingId,
         trackingUrl: trackingUrl,
+        logoUrl: logoUrl,
       });
 
       console.log('Successfully generated email content for', trackingId);

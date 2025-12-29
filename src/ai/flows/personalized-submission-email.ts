@@ -18,6 +18,7 @@ const PersonalizedEmailInputSchema = z.object({
   userName: z.string().describe('The name of the user.'),
   trackingId: z.string().describe('The unique tracking ID for the submission.'),
   trackingUrl: z.string().url().describe('The URL to the tracking page for this submission.'),
+  logoUrl: z.string().url().describe('The public URL to the company logo.'),
 });
 
 export type PersonalizedEmailInput = z.infer<typeof PersonalizedEmailInputSchema>;
@@ -79,9 +80,9 @@ const personalizedEmailPrompt = ai.definePrompt({
     <p>Dear {{{userName}}},</p>
     <p>Thank you for your submission. Your application has been received and is being processed. You can track the status of your application using the button below.</p>
     
-    <div style="margin: 20px 0; padding: 15px; background-color: #fffbe6; border: 1px solid #ffe58f; border-radius: 4px; animation: blink-animation 1.5s infinite;">
+    <div style="margin: 20px 0; padding: 15px; background-color: #fffbe6; border: 1px solid #ffe58f; border-radius: 4px;">
       <p style="margin: 0; font-weight: bold; color: #d46b08;">
-        &#9888; IMPORTANT: For best results, please DOWNLOAD the attached service agreement to your computer before viewing. Do not open it directly in Gmail.
+        &#9888; IMPORTANT: For best results, please DOWNLOAD the attached service agreement to your computer before viewing. Do not open it directly in your email client.
       </p>
     </div>
     
@@ -127,13 +128,14 @@ const personalizedEmailPrompt = ai.definePrompt({
 
 **Purpose:** This is a formal service agreement document for the user to keep. It must precisely match the layout and content of the user's reference image.
 **Content:**
-*   The "Redwood" logo (use the provided imgur URL).
+*   The "Redwood" logo (use the provided \`logoUrl\`).
 *   The title "TRUCKING SERVICE AGREEMENT".
 *   The agreement date.
 *   Sections for "Company Information", "Carrier Details", "Payment", and "Final Agreement".
 *   A placeholder for a signature.
 
 **Data to use:**
+- Logo URL: {{{logoUrl}}}
 - Agreement Date: {{{formData.date}}}
 - Dispatch Company: {{{formData.companyName}}}
 - Carrier Full Name: {{{formData.carrierFullName}}}
@@ -158,7 +160,7 @@ const personalizedEmailPrompt = ai.definePrompt({
 <body style="margin: 0; padding: 0; font-family: Arial, sans-serif; background-color: #fff;">
   <div style="width: 800px; margin: 40px auto; padding: 40px; border: 1px solid #ccc; box-shadow: 0 0 10px rgba(0,0,0,0.1);">
     <div style="text-align: center; margin-bottom: 40px;">
-      <img src="https://i.imgur.com/Puhj54j.png" alt="Redwood Logo" style="width: 200px; height: auto;">
+      <img src="{{{logoUrl}}}" alt="Redwood Logo" style="width: 200px; height: auto;">
     </div>
     <div style="text-align: center; margin-bottom: 30px;">
       <h1 style="font-size: 24px; font-weight: bold; margin: 0;">TRUCKING SERVICE AGREEMENT</h1>
