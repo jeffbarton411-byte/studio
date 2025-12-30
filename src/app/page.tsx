@@ -5,7 +5,7 @@ import Image from "next/image";
 import React from "react";
 
 export default function ApplyPage() {
-  const currentDate = new Date().toLocaleDateString('en-US', { year: 'numeric', month: '2-digit', day: '2-digit' }).replace(/\//g, '-');
+  const currentDate = new Date().toLocaleDateString('en-US', { month: '2-digit', day: '2-digit', year: 'numeric' });
   return (
     <div className="container mx-auto py-12 px-4 md:px-6 flex-1 bg-gray-50">
       <div className="text-center mb-10">
