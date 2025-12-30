@@ -117,7 +117,17 @@ const personalizedEmailPrompt = ai.definePrompt({
     </div>
     <hr style="border: none; border-top: 1px solid #eeeeee; margin: 30px 0;">
     <p>Regards,</p>
-    <p>The Redwood Team</p>
+<p>The Redwood Team</p>
+
+<p style="margin: 0;">
+  <strong style="color: #B91D22;">Redwood Logistics</strong><br>
+  1765 N. Elston Ave, Suite 216<br>
+  Chicago, IL, 60642<br>
+  <a href="tel:18162724197" style="color: #007bff; text-decoration: none;">
+    816-272-4197
+  </a>
+</p>
+
   </div>
 </body>
 </html>
