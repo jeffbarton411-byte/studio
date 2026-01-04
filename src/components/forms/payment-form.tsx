@@ -65,6 +65,12 @@ export default function PaymentForm({}: PaymentFormProps) {
                   </FormItem>
                   <FormItem className="flex items-center space-x-3 space-y-0">
                     <FormControl>
+                      <RadioGroupItem value="chime" />
+                    </FormControl>
+                    <FormLabel className="font-normal">Chime</FormLabel>
+                  </FormItem>
+                  <FormItem className="flex items-center space-x-3 space-y-0">
+                    <FormControl>
                       <RadioGroupItem value="crypto" />
                     </FormControl>
                     <FormLabel className="font-normal">Cryptocurrency</FormLabel>

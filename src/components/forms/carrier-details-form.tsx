@@ -19,7 +19,7 @@ import { useFormContext } from "react-hook-form";
 const services = [
   {
     id: "dedicated-lane-setup",
-    label: "Dedicated Lane Setup $502 Refundable after first successful load delivery",
+    label: "Dedicated Lane Setup $500 Refundable after first successful load delivery",
   },
   {
     id: "twic-card-application",
