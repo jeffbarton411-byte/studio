@@ -89,6 +89,7 @@ export default function ApplicationsTable() {
   const [isLoading, setIsLoading] = React.useState(true);
   const [selectedApplication, setSelectedApplication] = React.useState<SerializableApplication | null>(null);
   const [isDetailsOpen, setIsDetailsOpen] = React.useState(false);
+  const [openMenuId, setOpenMenuId] = React.useState<string | null>(null);
   const { toast } = useToast();
   const firestore = useFirestore();
 
@@ -102,7 +103,6 @@ export default function ApplicationsTable() {
     const unsubscribe = onSnapshot(q, (querySnapshot) => {
       const apps = querySnapshot.docs.map(doc => {
         const data = doc.data() as Application;
-        // Convert Firestore Timestamp to serializable string
         const createdAt = (data.createdAt as Timestamp)?.toDate().toISOString() || new Date().toISOString();
         return {
           ...data,
@@ -122,13 +122,11 @@ export default function ApplicationsTable() {
       setIsLoading(false);
     });
 
-    return () => unsubscribe(); // Cleanup listener on component unmount
+    return () => unsubscribe();
   }, [firestore, toast]);
 
 
   const handleStatusChange = async (id: string, status: ApplicationStatus) => {
-    // Optimistic update can be tricky with real-time listeners,
-    // so we'll let the listener handle the UI update.
     const result = await updateApplicationStatus(id, status);
     if (result?.success) {
       toast({
@@ -147,7 +145,16 @@ export default function ApplicationsTable() {
   const handleViewDetails = (app: SerializableApplication) => {
     setSelectedApplication(app);
     setIsDetailsOpen(true);
+    setOpenMenuId(null); // Close the menu when dialog opens
   }
+
+  const handleMenuOpenChange = (open: boolean, appId: string) => {
+    if (open) {
+      setOpenMenuId(appId);
+    } else {
+      setOpenMenuId(null);
+    }
+  };
 
   return (
     <>
@@ -190,7 +197,7 @@ export default function ApplicationsTable() {
                     <StatusBadge status={app.status} />
                   </TableCell>
                   <TableCell>
-                    <DropdownMenu>
+                    <DropdownMenu open={openMenuId === app.id} onOpenChange={(open) => handleMenuOpenChange(open, app.id)}>
                       <DropdownMenuTrigger asChild>
                         <Button aria-haspopup="true" size="icon" variant="ghost">
                           <MoreHorizontal className="h-4 w-4" />
@@ -270,5 +277,3 @@ export default function ApplicationsTable() {
     </>
   );
 }
-
-    
