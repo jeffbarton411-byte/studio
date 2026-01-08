@@ -141,12 +141,12 @@ service cloud.firestore {
     /**
      * @description Controls access to the master list of applications for the admin panel.
      * @path /applications/{applicationId}
-     * @allow (list, get) Any authenticated user can read the application list (for the admin panel).
+     * @allow (list, get) Any user (authenticated or not) can read the application list for the admin panel.
      * @deny (create, update, delete) Client-side writes are disallowed; they must go through server-side actions.
-     * @principle Allows admin-level read access while protecting the data from client-side modification.
+     * @principle Allows public read access for the admin panel while protecting the data from client-side modification.
      */
     match /applications/{applicationId} {
-        allow read: if isSignedIn();
+        allow read: if true;
         allow write: if false;
     }
   }
