@@ -3,8 +3,6 @@ import { Inter, Space_Grotesk } from 'next/font/google';
 import './globals.css';
 import { cn } from '@/lib/utils';
 import { Toaster } from '@/components/ui/toaster';
-import Header from '@/components/header';
-import Footer from '@/components/footer';
 import { FirebaseClientProvider } from '@/firebase';
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
@@ -29,9 +27,7 @@ export default function RootLayout({
       </head>
       <body className={cn('min-h-screen bg-background font-body antialiased flex flex-col', inter.variable, spaceGrotesk.variable)}>
         <FirebaseClientProvider>
-          {/* <Header /> */}
           <main className="flex-1 flex flex-col">{children}</main>
-          {/* <Footer /> */}
           <Toaster />
         </FirebaseClientProvider>
       </body>

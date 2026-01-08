@@ -26,7 +26,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { MoreHorizontal, View, CheckCircle, CircleDashed, XCircle, Trash2, Hourglass, Eye, File as FileIcon } from 'lucide-react';
+import { MoreHorizontal, View, CheckCircle, CircleDashed, XCircle, Trash2, Hourglass, Eye, File as FileIcon, Loader2 } from 'lucide-react';
 import { ApplicationStatus, type Application } from '@/lib/types';
 import { format } from 'date-fns';
 import { useToast } from '@/components/ui/use-toast';
@@ -35,6 +35,8 @@ import StatusBadge from '@/components/admin/status-badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import Link from 'next/link';
 import Image from 'next/image';
+import { useFirestore } from '@/firebase';
+import { collection, onSnapshot, query, orderBy, Timestamp } from 'firebase/firestore';
 
 type SerializableApplication = Omit<Application, 'createdAt'> & {
   createdAt: string;
@@ -82,18 +84,53 @@ const DocumentPreview = ({ label, url }: { label: string, url?: string }) => (
     </div>
 );
 
-export default function ApplicationsTable({ initialApplications }: { initialApplications: SerializableApplication[] }) {
-  const [applications, setApplications] = React.useState(initialApplications);
+export default function ApplicationsTable() {
+  const [applications, setApplications] = React.useState<SerializableApplication[]>([]);
+  const [isLoading, setIsLoading] = React.useState(true);
   const [selectedApplication, setSelectedApplication] = React.useState<SerializableApplication | null>(null);
   const [isDetailsOpen, setIsDetailsOpen] = React.useState(false);
   const { toast } = useToast();
+  const firestore = useFirestore();
+
+  React.useEffect(() => {
+    if (!firestore) return;
+
+    setIsLoading(true);
+    const applicationsRef = collection(firestore, 'applications');
+    const q = query(applicationsRef, orderBy('createdAt', 'desc'));
+
+    const unsubscribe = onSnapshot(q, (querySnapshot) => {
+      const apps = querySnapshot.docs.map(doc => {
+        const data = doc.data() as Application;
+        // Convert Firestore Timestamp to serializable string
+        const createdAt = (data.createdAt as Timestamp)?.toDate().toISOString() || new Date().toISOString();
+        return {
+          ...data,
+          id: doc.id,
+          createdAt,
+        } as SerializableApplication;
+      });
+      setApplications(apps);
+      setIsLoading(false);
+    }, (error) => {
+      console.error("Error fetching applications:", error);
+      toast({
+        title: 'Error',
+        description: 'Could not fetch applications in real-time.',
+        variant: 'destructive',
+      });
+      setIsLoading(false);
+    });
+
+    return () => unsubscribe(); // Cleanup listener on component unmount
+  }, [firestore, toast]);
+
 
   const handleStatusChange = async (id: string, status: ApplicationStatus) => {
+    // Optimistic update can be tricky with real-time listeners,
+    // so we'll let the listener handle the UI update.
     const result = await updateApplicationStatus(id, status);
     if (result?.success) {
-      setApplications(prev =>
-        prev.map(app => (app.id === id ? { ...app, status } : app))
-      );
       toast({
         title: 'Status Updated',
         description: `Application ${id} marked as ${status}.`,
@@ -130,7 +167,16 @@ export default function ApplicationsTable({ initialApplications }: { initialAppl
             </TableRow>
           </TableHeader>
           <TableBody>
-            {applications.length > 0 ? (
+            {isLoading ? (
+                <TableRow>
+                    <TableCell colSpan={7} className="h-24 text-center">
+                       <div className="flex justify-center items-center">
+                         <Loader2 className="mr-2 h-6 w-6 animate-spin" />
+                         <span>Loading applications...</span>
+                       </div>
+                    </TableCell>
+                </TableRow>
+            ) : applications.length > 0 ? (
               applications.map(app => (
                 <TableRow key={app.id}>
                   <TableCell className="font-mono text-sm">{app.id}</TableCell>

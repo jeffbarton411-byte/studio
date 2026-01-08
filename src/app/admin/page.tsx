@@ -1,20 +1,8 @@
-import { getApplications } from "@/app/actions/application";
 import ApplicationsTable from "@/app/admin/applications-table";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import type { Timestamp } from "firebase-admin/firestore";
 
 export default async function AdminPage() {
-  const applications = await getApplications();
-
-  // Since Firestore Timestamps are not directly serializable for client components,
-  // we convert them to a serializable format (ISO string).
-  const serializableApplications = applications.map(app => ({
-    ...app,
-    // @ts-ignore
-    createdAt: (app.createdAt as Timestamp).toDate().toISOString(),
-  }));
-
   return (
     <div className="container mx-auto py-10">
       <div className="flex justify-between items-center mb-6">
@@ -29,9 +17,9 @@ export default async function AdminPage() {
          </div>
       </div>
       <p className="text-muted-foreground mb-8">
-        View and manage all user applications. You can change the status of each application from the actions menu.
+        View and manage all user applications in real-time. Changes will be reflected instantly.
       </p>
-      <ApplicationsTable initialApplications={serializableApplications} />
+      <ApplicationsTable />
     </div>
   );
 }

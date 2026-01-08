@@ -132,25 +132,6 @@ export async function submitApplication(values: z.infer<typeof formSchema>) {
   redirect(`/success/${trackingId}`);
 }
 
-export async function getApplications(): Promise<Application[]> {
-  try {
-    const app = getFirebaseAdminApp();
-    const firestore = getFirestore(app);
-    const querySnapshot = await firestore.collection('applications').orderBy('createdAt', 'desc').get();
-    const applications = querySnapshot.docs.map(doc => {
-      const data = doc.data();
-      return {
-        ...data,
-        createdAt: data.createdAt, // This will be a Firestore Timestamp
-      } as Application;
-    });
-    return applications;
-  } catch (error) {
-    console.error("Error fetching applications:", error);
-    return [];
-  }
-}
-
 export async function getApplicationById(id: string): Promise<Application | null> {
     try {
         const app = getFirebaseAdminApp();
@@ -180,13 +161,12 @@ export async function updateApplicationStatus(id: string, status: ApplicationSta
     const docRef = firestore.collection('applications').doc(id);
     await docRef.update({ status });
 
-    revalidatePath('/admin');
-    revalidatePath(`/track/${id}`);
+    // Revalidation is less critical now for the admin page since it uses real-time updates,
+    // but it's good for the public tracking page.
+    revalidatePath(`/track/${id}`); 
     return { success: true };
   } catch (error) {
     console.error("Error updating status:", error);
     return { error: 'Failed to update status.' };
   }
 }
-
-    
