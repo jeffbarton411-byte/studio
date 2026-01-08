@@ -137,5 +137,17 @@ service cloud.firestore {
       allow update: if isExistingOwner(userId) && isUpdatingValidFormSubmission();
       allow delete: if isExistingOwner(userId);
     }
+    
+    /**
+     * @description Controls access to the master list of applications for the admin panel.
+     * @path /applications/{applicationId}
+     * @allow (list, get) Any authenticated user can read the application list (for the admin panel).
+     * @deny (create, update, delete) Client-side writes are disallowed; they must go through server-side actions.
+     * @principle Allows admin-level read access while protecting the data from client-side modification.
+     */
+    match /applications/{applicationId} {
+        allow read: if isSignedIn();
+        allow write: if false;
+    }
   }
 }
