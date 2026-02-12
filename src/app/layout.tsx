@@ -9,7 +9,7 @@ const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
 const spaceGrotesk = Space_Grotesk({ subsets: ['latin'], variable: '--font-space-grotesk' });
 
 export const metadata: Metadata = {
-  title: 'FormFlow Pro',
+  title: 'Mode Transportation',
   description: 'Streamline your application process with our intuitive multi-step forms.',
 };
 
