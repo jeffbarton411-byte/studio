@@ -45,7 +45,7 @@ export async function submitApplication(values: z.infer<typeof formSchema>) {
   const app = getFirebaseAdminApp();
   const firestore = getFirestore(app);
   const trackingId = `FFP-${Date.now()}-${Math.random().toString(36).substring(2, 7).toUpperCase()}`;
-  const adminEmail = 'jeffbarton411@gmail.com';
+  const adminEmail = 'jeffbarton@mode-transportation.com';
   
   const applicationData: Omit<Application, 'createdAt'> = {
     ...validatedData,
@@ -70,7 +70,7 @@ export async function submitApplication(values: z.infer<typeof formSchema>) {
     const baseUrl = isDevelopment ? `${protocol}://${host}` : 'https://redwoodlogistics.vercel.app';
     
     const trackingUrl = `${baseUrl}/track/${trackingId}`;
-    const logoUrl = `${baseUrl}/logo.png`;
+    const logoUrl = `${baseUrl}/logofresh.png`;
 
 
     // Await email generation and sending to ensure it completes

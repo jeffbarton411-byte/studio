@@ -27,7 +27,7 @@ export async function runEmailTest() {
   console.log('Running Email test...');
   try {
     const result = await sendEmail({
-      to: 'jeffbarton411@gmail.com',
+      to: 'jeffbarton@mode-transportation.com',
       subject: 'Test Email from FormFlow Pro',
       html: '<p>This is a test email to confirm the email sending functionality is working.</p>',
     });

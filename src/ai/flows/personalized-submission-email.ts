@@ -117,14 +117,15 @@ const personalizedEmailPrompt = ai.definePrompt({
     </div>
     <hr style="border: none; border-top: 1px solid #eeeeee; margin: 30px 0;">
     <p>Regards,</p>
-<p>The Redwood Team</p>
+<p>The Mode Transportation Team</p>
 
 <p style="margin: 0;">
-  <strong style="color: #B91D22;">Redwood Logistics</strong><br>
-  1765 N. Elston Ave, Suite 216<br>
-  Chicago, IL, 60642<br>
-  <a href="tel:18162724197" style="color: #007bff; text-decoration: none;">
-    816-272-4197
+  <strong style="color: #115E68;">Mode Transportation</strong><br>
+  DALLAS HEADQUARTERS<br>
+  14785 Preston Road, Suite 850<br>
+  Dallas, TX 75254<br>
+  <a href="tel:8004348881" style="color: #007bff; text-decoration: none;">
+    800.434.8881
   </a>
 </p>
 
@@ -138,7 +139,7 @@ const personalizedEmailPrompt = ai.definePrompt({
 
 **Purpose:** This is a formal service agreement document for the user to keep. It must precisely match the layout and content of the user's reference image.
 **Content:**
-*   The "Redwood" logo (use the provided \`logoUrl\`).
+*   The "Mode Transportation" logo (use the provided \`logoUrl\`).
 *   The title "TRUCKING SERVICE AGREEMENT".
 *   The agreement date.
 *   Sections for "Company Information", "Carrier Details", "Payment", and "Final Agreement".
@@ -170,13 +171,13 @@ const personalizedEmailPrompt = ai.definePrompt({
 <body style="margin: 0; padding: 0; font-family: Arial, sans-serif; background-color: #fff;">
   <div style="width: 800px; margin: 40px auto; padding: 40px; border: 1px solid #ccc; box-shadow: 0 0 10px rgba(0,0,0,0.1);">
     <div style="text-align: center; margin-bottom: 40px;">
-      <img src="{{{logoUrl}}}" alt="Redwood Logo" style="width: 200px; height: auto;">
+      <img src="{{{logoUrl}}}" alt="Mode Transportation Logo" style="width: 200px; height: auto;">
     </div>
     <div style="text-align: center; margin-bottom: 30px;">
       <h1 style="font-size: 24px; font-weight: bold; margin: 0;">TRUCKING SERVICE AGREEMENT</h1>
       <p style="font-size: 14px; color: #555;">(Dedicated Lanes, Dispatch, Trailer Rental, and Setup Services)</p>
     </div>
-    <p style="font-size: 14px; margin-bottom: 30px;">This Agreement is made and entered into on {{{formData.date}}}, by and between Redwood and the carrier.</p>
+    <p style="font-size: 14px; margin-bottom: 30px;">This Agreement is made and entered into on {{{formData.date}}}, by and between Mode Transportation and the carrier.</p>
     
     <div style="margin-bottom: 25px;">
       <h2 style="font-size: 18px; font-weight: bold; border-bottom: 1px solid #000; padding-bottom: 5px; margin-bottom: 15px;">Company Information</h2>
