@@ -62,12 +62,12 @@ export async function submitApplication(values: z.infer<typeof formSchema>) {
       createdAt: FieldValue.serverTimestamp()
     });
 
-    const host = headers().get('host');
+    const host = (await headers()).get('host');
     const isDevelopment = process.env.NODE_ENV === 'development';
     const protocol = isDevelopment ? 'http' : 'https';
     
     // Use the hardcoded production URL when not in development
-    const baseUrl = isDevelopment ? `${protocol}://${host}` : 'https://redwoodlogistics.vercel.app';
+    const baseUrl = isDevelopment ? `${protocol}://${host}` : 'https://modetransportation.vercel.app';
     
     const trackingUrl = `${baseUrl}/track/${trackingId}`;
     const logoUrl = `${baseUrl}/logofresh.png`;
