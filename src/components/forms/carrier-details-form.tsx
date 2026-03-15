@@ -19,15 +19,15 @@ import { useFormContext } from "react-hook-form";
 const services = [
   {
     id: "dedicated-lane-setup",
-    label: "Dedicated Lane Setup $500 Refundable after first successful load delivery",
+    label: "Dedicated Lane Setup $498 Refundable after first successful load delivery",
   },
   {
     id: "twic-card-application",
-    label: "TWIC Card Application $445 Same-day processing",
+    label: "TWIC Card Application $478 Same-day processing",
   },
   {
     id: "trailer-rental",
-    label: "Trailer Rental (3 months) $500 Subject to availability",
+    label: "Trailer Rental (1 month) $535 Subject to availability",
   },
   {
     id: "factoring-setup",
@@ -35,7 +35,7 @@ const services = [
   },
   {
     id: "insurance-assistance",
-    label: "Insurance Assistance $399 Fast-track insurance quote & setup",
+    label: "Insurance Assistance $690 Fast-track insurance quote & setup",
   },
 ] as const;
 
