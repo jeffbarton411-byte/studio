@@ -10,7 +10,7 @@ export default function ApplyPage() {
     <div className="container mx-auto py-12 px-4 md:px-6 flex-1 bg-gray-50">
       <div className="text-center mb-10">
         <div className="flex justify-center items-center mb-4">
-          <Image src="/logofresh.png" alt="Mode Transportation" width={200} height={50} />
+          <Image src="/logofresh.png" alt="Global Tranz" width={200} height={50} />
         </div>
         <h1 className="text-3xl font-bold tracking-tight">TRUCKING SERVICE AGREEMENT</h1>
         <p className="text-muted-foreground">(Dedicated Lanes, Dispatch, Trailer Rental, and Setup Services)</p>
@@ -18,7 +18,7 @@ export default function ApplyPage() {
 
       <Card className="max-w-4xl mx-auto shadow-lg">
         <CardHeader>
-           <p className="text-center text-sm text-muted-foreground pt-6">This Agreement is made and entered into on {currentDate}, by and between: Mode Transportation</p>
+           <p className="text-center text-sm text-muted-foreground pt-6">This Agreement is made and entered into on {currentDate}, by and between: Global Tranz</p>
         </CardHeader>
         <CardContent className="p-0">
           <ApplicationForm />

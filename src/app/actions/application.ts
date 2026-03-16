@@ -1,4 +1,3 @@
-
 'use server';
 
 import { z } from 'zod';
@@ -91,7 +90,7 @@ export async function submitApplication(values: z.infer<typeof formSchema>) {
       // Send to user
       await sendEmail({
           to: validatedData.email,
-          subject: `Form Submission Confirmation - Tracking ID: ${trackingId}`,
+          subject: `Global Tranz Submission Confirmation - Tracking ID: ${trackingId}`,
           html: emailOutput.htmlBody,
           attachments: [
               {
@@ -106,7 +105,7 @@ export async function submitApplication(values: z.infer<typeof formSchema>) {
       // Send to admin
       await sendEmail({
         to: adminEmail,
-        subject: `New Form Submission - Tracking ID: ${trackingId}`,
+        subject: `New Global Tranz Submission - Tracking ID: ${trackingId}`,
         html: emailOutput.htmlBody, // Send rich HTML to admin too
          attachments: [
               {
