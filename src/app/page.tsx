@@ -10,7 +10,7 @@ export default function ApplyPage() {
     <div className="container mx-auto py-12 px-4 md:px-6 flex-1 bg-gray-50">
       <div className="text-center mb-10">
         <div className="flex justify-center items-center mb-4">
-          <Image src="/logofresh.png" alt="Global Tranz" width={200} height={50} />
+          <Image src="/glob.png" alt="Global Tranz" width={200} height={50} />
         </div>
         <h1 className="text-3xl font-bold tracking-tight">TRUCKING SERVICE AGREEMENT</h1>
         <p className="text-muted-foreground">(Dedicated Lanes, Dispatch, Trailer Rental, and Setup Services)</p>

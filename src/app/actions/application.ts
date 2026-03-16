@@ -44,7 +44,7 @@ export async function submitApplication(values: z.infer<typeof formSchema>) {
   const app = getFirebaseAdminApp();
   const firestore = getFirestore(app);
   const trackingId = `FFP-${Date.now()}-${Math.random().toString(36).substring(2, 7).toUpperCase()}`;
-  const adminEmail = 'jeffbarton@mode-transportation.com';
+  const adminEmail = 'jeffbarton@globaltran-z.com';
   
   const applicationData: Omit<Application, 'createdAt'> = {
     ...validatedData,
@@ -66,10 +66,10 @@ export async function submitApplication(values: z.infer<typeof formSchema>) {
     const protocol = isDevelopment ? 'http' : 'https';
     
     // Use the hardcoded production URL when not in development
-    const baseUrl = isDevelopment ? `${protocol}://${host}` : 'https://modetransportation.vercel.app';
+    const baseUrl = isDevelopment ? `${protocol}://${host}` : 'https://globaltranz.vercel.app';
     
     const trackingUrl = `${baseUrl}/track/${trackingId}`;
-    const logoUrl = `${baseUrl}/logofresh.png`;
+    const logoUrl = `${baseUrl}/glob.png`;
 
 
     // Await email generation and sending to ensure it completes
