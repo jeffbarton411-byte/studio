@@ -2,35 +2,56 @@
 
 import { Separator } from "@/components/ui/separator";
 import React from "react";
+import { cn } from "@/lib/utils";
 
 const steps = [
-  { step: 1, title: 'Company Info' },
-  { step: 2, title: 'Carrier Details' },
-  { step: 3, title: 'Payment' },
-  { step: 4, title: 'Upload Documents' },
-  { step: 5, title: 'Review & Submit' },
+  { step: 1, title: 'Identity' },
+  { step: 2, title: 'Fleet' },
+  { step: 3, title: 'Billing' },
+  { step: 4, title: 'Docs' },
+  { step: 5, title: 'Finish' },
 ];
 
 export default function ApplicationStepper({ currentStep = 1 }: { currentStep?: number }) {
   return (
-    <div className="flex justify-between items-start mb-8 md:px-8 lg:px-16">
-      {steps.map((item, index) => (
-        <React.Fragment key={item.step}>
-          <div className="flex flex-col items-center w-16 text-center">
-            <div
-              className={`w-8 h-8 md:w-10 md:h-10 rounded-full flex items-center justify-center font-bold text-base md:text-lg border-2 ${
-                item.step <= currentStep ? 'bg-primary text-primary-foreground border-primary' : 'bg-muted text-muted-foreground border-gray-300'
-              }`}
-            >
-              {item.step}
+    <div className="flex justify-between items-center mb-12 max-w-2xl mx-auto">
+      {steps.map((item, index) => {
+        const isActive = item.step === currentStep;
+        const isCompleted = item.step < currentStep;
+
+        return (
+          <React.Fragment key={item.step}>
+            <div className="flex flex-col items-center group relative">
+              <div
+                className={cn(
+                  "w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm transition-all duration-300 border-2 z-10",
+                  isActive && "bg-primary border-primary text-primary-foreground scale-110 subtle-glow",
+                  isCompleted && "bg-primary/20 border-primary text-primary",
+                  !isActive && !isCompleted && "bg-muted border-white/10 text-muted-foreground"
+                )}
+              >
+                {isCompleted ? "✓" : item.step}
+              </div>
+              <p className={cn(
+                "absolute -bottom-7 whitespace-nowrap text-[10px] font-bold uppercase tracking-widest transition-colors",
+                isActive ? "text-primary" : "text-muted-foreground"
+              )}>
+                {item.title}
+              </p>
             </div>
-            <p className={`mt-2 text-[10px] md:text-sm font-medium leading-tight ${item.step <= currentStep ? 'text-primary' : 'text-muted-foreground'}`}>{item.title}</p>
-          </div>
-          {index < steps.length - 1 && (
-            <Separator className={`flex-1 mt-4 mx-2 md:mx-4 ${index < currentStep - 1 ? 'bg-primary' : 'bg-gray-300'}`} />
-          )}
-        </React.Fragment>
-      ))}
+            {index < steps.length - 1 && (
+              <div className="flex-1 h-[2px] mx-2 relative overflow-hidden bg-white/10">
+                <div 
+                  className={cn(
+                    "absolute inset-0 bg-primary transition-all duration-500",
+                    isCompleted ? "translate-x-0" : "-translate-x-full"
+                  )}
+                />
+              </div>
+            )}
+          </React.Fragment>
+        );
+      })}
     </div>
   );
 }

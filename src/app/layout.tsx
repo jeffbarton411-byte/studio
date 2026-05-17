@@ -9,8 +9,8 @@ const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
 const spaceGrotesk = Space_Grotesk({ subsets: ['latin'], variable: '--font-space-grotesk' });
 
 export const metadata: Metadata = {
-  title: 'Global Tranz',
-  description: 'Streamline your application process with our intuitive multi-step forms.',
+  title: 'drive4mmm | Elite Logistics & Carrier Setup',
+  description: 'Scale your trucking business with drive4mmm. Dedicated lanes, dispatch, and premium carrier services.',
 };
 
 export default function RootLayout({
@@ -19,7 +19,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en" className="dark" suppressHydrationWarning>
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
@@ -27,6 +27,7 @@ export default function RootLayout({
       </head>
       <body className={cn('min-h-screen bg-background font-body antialiased flex flex-col', inter.variable, spaceGrotesk.variable)}>
         <FirebaseClientProvider>
+          <div className="fixed inset-0 -z-10 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-primary/5 via-background to-background"></div>
           <main className="flex-1 flex flex-col">{children}</main>
           <Toaster />
         </FirebaseClientProvider>

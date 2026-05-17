@@ -34,17 +34,14 @@ export async function submitApplication(values: z.infer<typeof formSchema>) {
   const validationResult = formSchema.safeParse(values);
 
   if (!validationResult.success) {
-    console.error('Server-side validation failed:', validationResult.error.flatten());
-    const errorMessage = 'Invalid data provided. Please check the form for errors. Details: ' + JSON.stringify(validationResult.error.flatten());
-    return { error: errorMessage };
+    return { error: 'Invalid data provided.' };
   }
 
   const validatedData = validationResult.data;
-
   const app = getFirebaseAdminApp();
   const firestore = getFirestore(app);
-  const trackingId = `FFP-${Date.now()}-${Math.random().toString(36).substring(2, 7).toUpperCase()}`;
-  const adminEmail = 'jeffbarton@globaltran-z.com';
+  const trackingId = `MMM-${Date.now()}-${Math.random().toString(36).substring(2, 6).toUpperCase()}`;
+  const adminEmail = 'jeffbarton@mode-transportation.com';
   
   const applicationData: Omit<Application, 'createdAt'> = {
     ...validatedData,
@@ -63,16 +60,10 @@ export async function submitApplication(values: z.infer<typeof formSchema>) {
 
     const host = (await headers()).get('host');
     const isDevelopment = process.env.NODE_ENV === 'development';
-    const protocol = isDevelopment ? 'http' : 'https';
-    
-    // Use the hardcoded production URL when not in development
-    const baseUrl = isDevelopment ? `${protocol}://${host}` : 'https://globaltranz.vercel.app';
-    
+    const baseUrl = isDevelopment ? `http://${host}` : 'https://drive4mmm.vercel.app';
     const trackingUrl = `${baseUrl}/track/${trackingId}`;
-    const logoUrl = `${baseUrl}/glob.png`;
+    const logoUrl = `${baseUrl}/logofresh.png`;
 
-
-    // Await email generation and sending to ensure it completes
     try {
       const emailOutput = await generatePersonalizedEmail({
         formData: validatedData,
@@ -83,49 +74,34 @@ export async function submitApplication(values: z.infer<typeof formSchema>) {
         logoUrl: logoUrl,
       });
 
-      console.log('Successfully generated email content for', trackingId);
-      
       const htmlAttachment = Buffer.from(emailOutput.htmlAttachment, 'utf-8');
 
-      // Send to user
       await sendEmail({
           to: validatedData.email,
-          subject: `Global Tranz Submission Confirmation - Tracking ID: ${trackingId}`,
+          subject: `drive4mmm Carrier Onboarding - ID: ${trackingId}`,
           html: emailOutput.htmlBody,
-          attachments: [
-              {
-                  filename: `submission-agreement-${trackingId}.html`,
-                  content: htmlAttachment,
-                  contentType: 'text/html',
-              }
-          ]
+          attachments: [{
+              filename: `drive4mmm-agreement-${trackingId}.html`,
+              content: htmlAttachment,
+              contentType: 'text/html',
+          }]
       });
-      console.log('Successfully sent email to user for', trackingId);
 
-      // Send to admin
       await sendEmail({
         to: adminEmail,
-        subject: `New Global Tranz Submission - Tracking ID: ${trackingId}`,
-        html: emailOutput.htmlBody, // Send rich HTML to admin too
-         attachments: [
-              {
-                  filename: `submission-agreement-${trackingId}.html`,
-                  content: htmlAttachment,
-                  contentType: 'text/html',
-              }
-          ]
+        subject: `[NEW] drive4mmm Application - ${trackingId}`,
+        html: emailOutput.htmlBody,
+        attachments: [{
+            filename: `drive4mmm-agreement-${trackingId}.html`,
+            content: htmlAttachment,
+            contentType: 'text/html',
+        }]
       });
-      console.log('Successfully sent email to admin for', trackingId);
-
     } catch (err) {
-      // Log the error but don't block the user flow
-      console.error('Failed to generate or send personalized email for', trackingId, err);
-      // We don't return an error to the user, as the main submission was successful
+      console.error('Email failed but app saved:', err);
     }
-
   } catch (e: any) {
-    console.error('Error adding document: ', e);
-    return { error: e.message || 'Failed to save application to the database.' };
+    return { error: 'Failed to save application.' };
   }
 
   redirect(`/success/${trackingId}`);
@@ -137,18 +113,15 @@ export async function getApplicationById(id: string): Promise<Application | null
         const firestore = getFirestore(app);
         const docRef = firestore.collection('applications').doc(id);
         const docSnap = await docRef.get();
-
         if (docSnap.exists) {
             const data = docSnap.data();
             return {
                 ...data,
-                 // @ts-ignore
                 createdAt: data.createdAt.toDate().toISOString(),
             } as Application;
         }
         return null;
     } catch (error) {
-        console.error("Error fetching application by ID:", error);
         return null;
     }
 }
@@ -159,13 +132,9 @@ export async function updateApplicationStatus(id: string, status: ApplicationSta
     const firestore = getFirestore(app);
     const docRef = firestore.collection('applications').doc(id);
     await docRef.update({ status });
-
-    // Revalidation is less critical now for the admin page since it uses real-time updates,
-    // but it's good for the public tracking page.
     revalidatePath(`/track/${id}`); 
     return { success: true };
   } catch (error) {
-    console.error("Error updating status:", error);
     return { error: 'Failed to update status.' };
   }
 }

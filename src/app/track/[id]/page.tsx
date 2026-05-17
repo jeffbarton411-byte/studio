@@ -1,53 +1,30 @@
-
 import { getApplicationById } from "@/app/actions/application";
 import StatusBadge from "@/components/admin/status-badge";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
 import { Application } from "@/lib/types";
 import { format } from "date-fns";
-import { AlertCircle, Eye, File as FileIcon, Home } from "lucide-react";
-import Image from "next/image";
+import { AlertCircle, Eye, Home, MapPin } from "lucide-react";
 import Link from "next/link";
 import React from "react";
 
 const DetailSection = ({ title, children }: { title: string, children: React.ReactNode }) => (
-    <div>
-        <h3 className="text-lg font-semibold text-gray-800 mb-3">{title}</h3>
-        <div className="space-y-3 bg-white p-4 rounded-lg border">{children}</div>
+    <div className="space-y-4">
+        <h3 className="text-lg font-bold text-primary flex items-center gap-2">
+          <div className="h-1 w-4 bg-primary rounded-full"></div>
+          {title}
+        </h3>
+        <div className="space-y-1 bg-white/[0.02] p-6 rounded-xl border border-white/5 glass">{children}</div>
     </div>
 );
 
 const DetailItem = ({ label, value }: { label: string; value?: React.ReactNode }) => (
-  <div className="flex flex-col sm:flex-row sm:justify-between py-2 border-b last:border-none">
-    <p className="text-sm font-medium text-muted-foreground">{label}</p>
-    <div className="text-sm text-right font-medium">{value || 'N/A'}</div>
+  <div className="flex flex-col sm:flex-row sm:justify-between py-3 border-b border-white/5 last:border-none group">
+    <p className="text-sm font-medium text-muted-foreground group-hover:text-white transition-colors">{label}</p>
+    <div className="text-sm sm:text-right font-semibold">{value || 'N/A'}</div>
   </div>
 );
-
-const DocumentPreviewItem = ({ label, url }: { label: string; url?: string }) => (
-    <div className="py-2 border-b last:border-none">
-        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center">
-             <p className="text-sm font-medium text-muted-foreground">{label}</p>
-              {url ? (
-                <Button variant="outline" size="sm" asChild className="mt-2 sm:mt-0">
-                    <Link href={url} target="_blank" rel="noopener noreferrer">
-                        <Eye className="mr-2 h-4 w-4" /> View Document
-                    </Link>
-                </Button>
-            ) : (
-                <p className="text-sm font-medium">Not provided</p>
-            )}
-        </div>
-         {url && url.match(/\.(jpeg|jpg|gif|png|webp|avif)$/i) != null && (
-            <div className="mt-3 w-full h-auto max-h-80 overflow-hidden rounded-md border p-2 flex justify-center bg-gray-50">
-                <Image src={url} alt={`${label} preview`} width={400} height={300} className="w-auto h-full object-contain" />
-            </div>
-        )}
-    </div>
-);
-
 
 export default async function TrackApplicationPage({ params }: { params: { id: string } }) {
     const application: Application | null = await getApplicationById(params.id);
@@ -55,19 +32,19 @@ export default async function TrackApplicationPage({ params }: { params: { id: s
     if (!application) {
         return (
             <div className="container mx-auto flex-1 flex items-center justify-center py-12 px-4">
-                <Card className="w-full max-w-md text-center">
+                <Card className="w-full max-w-md text-center glass border-destructive/20">
                      <CardHeader>
-                        <div className="mx-auto bg-red-100 p-3 rounded-full w-fit">
-                            <AlertCircle className="w-10 h-10 text-red-600" />
+                        <div className="mx-auto bg-destructive/10 p-4 rounded-full w-fit">
+                            <AlertCircle className="w-12 h-12 text-destructive" />
                         </div>
-                        <CardTitle className="font-headline text-3xl mt-4">Not Found</CardTitle>
-                        <CardDescription>
-                            The application with tracking ID <span className="font-mono font-bold">{params.id}</span> could not be found. Please check the ID and try again.
+                        <CardTitle className="font-headline text-3xl mt-6">Application Missing</CardTitle>
+                        <CardDescription className="text-base mt-2">
+                            The tracking ID <span className="font-mono font-bold text-white">{params.id}</span> was not found in our database.
                         </CardDescription>
                     </CardHeader>
                     <CardContent>
-                         <Button asChild>
-                            <Link href="/"><Home className="mr-2" /> Back to Home</Link>
+                         <Button asChild className="w-full h-12">
+                            <Link href="/"><Home className="mr-2 h-4 w-4" /> Return to Application</Link>
                         </Button>
                     </CardContent>
                 </Card>
@@ -76,58 +53,62 @@ export default async function TrackApplicationPage({ params }: { params: { id: s
     }
 
     return (
-        <div className="bg-gray-50/50 flex-1">
-            <div className="container mx-auto py-12 px-4 md:px-6">
-                <div className="max-w-4xl mx-auto">
-                    <div className="text-center mb-8">
-                        <h1 className="text-3xl font-bold tracking-tight">Application Status</h1>
-                        <p className="text-muted-foreground mt-2">Tracking ID: <span className="font-mono font-semibold text-primary">{application.id}</span></p>
+        <div className="flex-1 relative">
+            <div className="container mx-auto py-16 px-4 md:px-6 relative z-10">
+                <div className="max-w-4xl mx-auto space-y-10">
+                    <div className="text-center space-y-2">
+                        <h1 className="text-4xl font-bold tracking-tight font-headline">Tracking Portal</h1>
+                        <p className="text-muted-foreground text-lg">drive4mmm Submission Analysis</p>
+                        <div className="flex justify-center mt-4">
+                          <Badge variant="outline" className="font-mono py-1 px-4 text-primary border-primary/30">
+                            {application.id}
+                          </Badge>
+                        </div>
                     </div>
 
-                    <Card className="mb-8">
-                        <CardContent className="p-6 flex flex-col md:flex-row justify-between items-center gap-4">
-                             <div>
-                                <p className="text-sm text-muted-foreground">Status</p>
-                                <StatusBadge status={application.status} />
+                    <Card className="glass border-white/5 subtle-glow">
+                        <CardContent className="p-8 flex flex-col md:flex-row justify-between items-center gap-8">
+                             <div className="text-center md:text-left space-y-2">
+                                <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Current Phase</p>
+                                <div className="scale-125 origin-left">
+                                  <StatusBadge status={application.status} />
+                                </div>
                              </div>
-                             <div>
-                                <p className="text-sm text-muted-foreground">Submitted On</p>
-                                <p className="font-medium">{format(new Date(application.createdAt as string), 'PPP, p')}</p>
+                             <div className="h-10 w-px bg-white/5 hidden md:block"></div>
+                             <div className="text-center md:text-right space-y-1">
+                                <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Log Recorded</p>
+                                <p className="font-mono text-lg">{format(new Date(application.createdAt as string), 'MMM dd, yyyy | HH:mm')}</p>
                              </div>
                         </CardContent>
                     </Card>
 
-                    <div className="space-y-8">
-                        <DetailSection title="Applicant Information">
-                            <DetailItem label="Printed Name" value={application.printName} />
-                            <DetailItem label="Email Address" value={application.email} />
-                            <DetailItem label="Phone Number" value={application.phoneNumber} />
-                            <DetailItem label="Signature" value={<span className="font-serif italic">{application.signature}</span>} />
-                            <DetailItem label="Date of Agreement" value={format(new Date(application.date), 'PPP')} />
+                    <div className="grid gap-10">
+                        <DetailSection title="Owner Specifications">
+                            <DetailItem label="Full Legal Name" value={application.printName} />
+                            <DetailItem label="Digital Identifier" value={application.email} />
+                            <DetailItem label="Direct Line" value={application.phoneNumber} />
+                            <DetailItem label="Authentication Signature" value={<span className="font-serif italic text-primary text-lg">"{application.signature}"</span>} />
                         </DetailSection>
 
-                        <DetailSection title="Company & Carrier Details">
-                            <DetailItem label="Dispatch Company" value={application.companyName} />
-                            <DetailItem label="Carrier Full Name" value={application.carrierFullName} />
-                            <DetailItem label="Carrier Company Name" value={application.carrierCompanyName} />
-                            <DetailItem label="MC Number" value={application.mcNumber} />
-                            <DetailItem label="DOT Number" value={application.dotNumber} />
+                        <DetailSection title="Operations & Fleet">
+                            <DetailItem label="Dispatch Entity" value={application.companyName} />
+                            <DetailItem label="Carrier Brand" value={application.carrierCompanyName || application.carrierFullName} />
+                            <DetailItem label="MC Authority" value={application.mcNumber} />
+                            <DetailItem label="DOT Authority" value={application.dotNumber} />
                         </DetailSection>
 
-                        <DetailSection title="Services & Payment">
-                            <DetailItem label="Selected Services" value={<Badge variant="secondary" className="whitespace-normal text-right">{application.services.join(', ')}</Badge>} />
-                            <DetailItem label="Service Fee Payment" value={application.paymentMethod} />
-                            <DetailItem label="Carrier Payment Method" value={application.howYouGetPaid} />
-                        </DetailSection>
-
-                         <DetailSection title="Uploaded Documents">
-                            <DocumentPreviewItem label="Copy of Insurance" url={application.insuranceCopy} />
-                            <DocumentPreviewItem label="Factoring Documents" url={application.factoringDocuments} />
+                        <DetailSection title="Logistics Config">
+                            <DetailItem label="Service Bundle" value={<div className="flex flex-wrap gap-2 justify-end">{application.services.map(s => <Badge key={s} variant="secondary" className="bg-primary/10 text-primary border-none">{s}</Badge>)}</div>} />
+                            <DetailItem label="Funding Method" value={application.paymentMethod} />
                         </DetailSection>
                     </div>
-                     <div className="text-center mt-10">
-                        <Button asChild>
-                            <Link href="/"><Home className="mr-2" /> Back to Home</Link>
+
+                    <div className="flex flex-col items-center gap-6 pt-10">
+                        <p className="text-muted-foreground text-sm max-w-md text-center">
+                          Need to update your details? Contact our headquarters at 800.434.8881
+                        </p>
+                        <Button asChild variant="outline" className="glass px-8">
+                            <Link href="/"><Home className="mr-2 h-4 w-4" /> Home Dashboard</Link>
                         </Button>
                     </div>
                 </div>
