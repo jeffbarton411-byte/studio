@@ -46,7 +46,7 @@ export default function CompanyInfoForm({ }: CompanyInfoFormProps) {
                 setSelectedCompany(value);
               }} defaultValue={field.value}>
                 <FormControl>
-                  <SelectTrigger>
+                  <SelectTrigger className="bg-white/5 border-white/10">
                     <SelectValue placeholder="Select a company" />
                   </SelectTrigger>
                 </FormControl>
@@ -61,10 +61,10 @@ export default function CompanyInfoForm({ }: CompanyInfoFormProps) {
         />
 
         {selectedCompany && (
-          <div className="space-y-4 rounded-lg bg-gray-50 p-4 border">
-            <h3 className="font-bold">Dispatch/Service Provider Representative</h3>
-            <p className="text-sm">{selectedCompany}</p>
-            <p className="text-sm">Date: {format(today, "yyyy-MM-dd")}</p>
+          <div className="space-y-4 rounded-lg bg-white/5 p-6 border border-white/10 glass">
+            <h3 className="font-bold text-white">Dispatch/Service Provider Representative</h3>
+            <p className="text-sm text-white/90">{selectedCompany}</p>
+            <p className="text-sm text-muted-foreground">Date: {format(today, "yyyy-MM-dd")}</p>
           </div>
         )}
     </>
