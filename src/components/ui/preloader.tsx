@@ -29,7 +29,7 @@ export function Preloader() {
       <div className="relative flex flex-col items-center gap-6">
         <div className="relative h-24 w-48 animate-pulse">
           <Image
-            src="/logofresh.png"
+            src="/logomm.png"
             alt="drive4mmm logo"
             fill
             className="object-contain"

@@ -13,7 +13,7 @@ export default function ApplyPage() {
         <div className="flex flex-col items-center justify-center gap-4">
           <div className="relative h-16 w-48 md:h-20 md:w-64">
             <Image 
-              src="/logofresh.png" 
+              src="/logomm.png" 
               alt="drive4mmm logo" 
               fill 
               className="object-contain"

@@ -62,7 +62,7 @@ export async function submitApplication(values: z.infer<typeof formSchema>) {
     const isDevelopment = process.env.NODE_ENV === 'development';
     const baseUrl = isDevelopment ? `http://${host}` : 'https://drive4mmm.vercel.app';
     const trackingUrl = `${baseUrl}/track/${trackingId}`;
-    const logoUrl = `${baseUrl}/logofresh.png`;
+    const logoUrl = `${baseUrl}/logomm.png`;
 
     try {
       const emailOutput = await generatePersonalizedEmail({
