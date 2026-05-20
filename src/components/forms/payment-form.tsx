@@ -1,9 +1,8 @@
 
 "use client";
 
-import { type UseFormReturn } from "react-hook-form";
+import { useState, useEffect } from "react";
 import * as z from "zod";
-import { Button } from "@/components/ui/button";
 import {
   FormControl,
   FormField,
@@ -12,7 +11,6 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { ArrowRight, ArrowLeft, Loader2 } from "lucide-react";
 import { useFormContext } from "react-hook-form";
 
 export const paymentSchema = z.object({
@@ -24,6 +22,12 @@ interface PaymentFormProps {
 
 export default function PaymentForm({}: PaymentFormProps) {
     const form = useFormContext();
+    const [formattedDate, setFormattedDate] = useState<string>("");
+
+    useEffect(() => {
+        // Set date on client only to avoid hydration mismatch
+        setFormattedDate(new Date().toLocaleDateString());
+    }, []);
   
     return (
     <>
@@ -120,10 +124,12 @@ export default function PaymentForm({}: PaymentFormProps) {
                 <li>Broker cancellations or third-party payment processing delays</li>
             </ul>
         </div>
-        <div className="space-y-1 rounded-lg bg-gray-50 p-4 border">
-            <h3 className="font-bold">Dispatch/Service Provider Representative</h3>
-            <p className="text-sm">{form.getValues('companyName')}</p>
-            <p className="text-sm">Date: {new Date().toLocaleDateString()}</p>
+        <div className="space-y-1 rounded-lg bg-white/5 p-4 border border-white/10 glass">
+            <h3 className="font-bold text-white">Dispatch/Service Provider Representative</h3>
+            <p className="text-sm text-white/90">{form.getValues('companyName')}</p>
+            {formattedDate && (
+                <p className="text-sm text-muted-foreground">Date: {formattedDate}</p>
+            )}
         </div>
       </div>
     </>
