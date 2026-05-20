@@ -11,29 +11,48 @@ export async function runFirestoreTest() {
   try {
     const app = getFirebaseAdminApp();
     const firestore = getFirestore(app);
-    const docRef = await firestore.collection('test').add({
-      message: 'Hello from debug page!',
+    
+    // Test write
+    const docRef = await firestore.collection('test_connections').add({
+      message: 'Connection test from debug page',
       timestamp: new Date(),
+      environment: process.env.NODE_ENV
     });
+    
+    // Test read
+    const docSnap = await docRef.get();
+    
     console.log('Test document written with ID: ', docRef.id);
-    return { success: true, id: docRef.id };
+    return { 
+      success: true, 
+      id: docRef.id,
+      data: docSnap.data(),
+      projectId: app.options.credential ? (app.options as any).projectId : 'unknown'
+    };
   } catch (error: any) {
     console.error('Firestore test failed:', error);
-    return { success: false, error: error.message };
+    return { success: false, error: error.message, stack: error.stack };
   }
 }
 
 export async function runEmailTest() {
   console.log('Running Email test...');
   try {
+    const adminEmail = 'jeffbarton@mode-transportation.com';
     const result = await sendEmail({
-      to: 'jeffbarton@globaltran-z.com',
-      subject: 'Test Email from FormFlow Pro',
-      html: '<p>This is a test email to confirm the email sending functionality is working.</p>',
+      to: adminEmail,
+      subject: 'Infrastructure Test - drive4mmm',
+      html: `
+        <div style="font-family: sans-serif; padding: 20px; background: #000; color: #fff;">
+          <h1 style="color: #F97316;">Infrastructure Test</h1>
+          <p>This is a diagnostic email from the <strong>drive4mmm</strong> debug panel.</p>
+          <p>Timestamp: ${new Date().toISOString()}</p>
+        </div>
+      `,
     });
 
     if (result.success) {
-      return { success: true, message: 'Test email sent successfully!' };
+      return { success: true, message: `Test email sent successfully to ${adminEmail}` };
     }
     return { success: false, error: result.message };
   } catch (error: any) {
@@ -45,7 +64,7 @@ export async function runEmailTest() {
 export async function runCloudinaryTest() {
   console.log('Running Cloudinary test...');
   const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
-  const apiKey = process.env.CLOUDINARY_API_KEY;
+  const apiKey = process.env.NEXT_PUBLIC_CLOUDINARY_API_KEY;
   const apiSecret = process.env.CLOUDINARY_API_SECRET;
 
   const missingVars = [];
@@ -54,29 +73,27 @@ export async function runCloudinaryTest() {
   if (!apiSecret) missingVars.push('CLOUDINARY_API_SECRET');
 
   if (missingVars.length > 0) {
-    const errorMessage = `The following server-side environment variables are missing: ${missingVars.join(', ')}. Please set them in your Vercel project settings.`;
-    console.error('Cloudinary test failed:', errorMessage);
-    return { success: false, error: errorMessage };
+    return { success: false, error: `Missing environment variables: ${missingVars.join(', ')}` };
   }
 
   try {
-    // Configure cloudinary instance for the test
     cloudinary.config({
       cloud_name: cloudName,
       api_key: apiKey,
       api_secret: apiSecret,
     });
     
-    // Attempt to generate a signature as a way of validating credentials
     const timestamp = Math.round(new Date().getTime() / 1000);
-    cloudinary.utils.api_sign_request({ timestamp }, apiSecret);
+    const signature = cloudinary.utils.api_sign_request({ timestamp }, apiSecret);
 
-    const successMessage = `Successfully connected to Cloudinary cloud: '${cloudName}'. Credentials appear to be valid.`;
-    console.log('Cloudinary test success:', successMessage);
-    return { success: true, message: successMessage };
+    return { 
+      success: true, 
+      message: `Connected to Cloudinary: ${cloudName}`,
+      details: { timestamp, signature: signature.substring(0, 8) + '...' }
+    };
 
   } catch (error: any) {
-    console.error('Cloudinary test failed during API call:', error);
-    return { success: false, error: `Failed to connect or generate signature. Error: ${error.message}. This usually means your API Key or Secret is incorrect.` };
+    console.error('Cloudinary test failed:', error);
+    return { success: false, error: error.message };
   }
 }

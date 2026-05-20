@@ -33,7 +33,7 @@ export async function submitApplication(values: z.infer<typeof formSchema>) {
   const validationResult = formSchema.safeParse(values);
 
   if (!validationResult.success) {
-    return { error: 'Invalid data provided.' };
+    return { error: `Validation failed: ${validationResult.error.errors.map(e => e.message).join(', ')}` };
   }
 
   const validatedData = validationResult.data;
@@ -105,7 +105,8 @@ export async function submitApplication(values: z.infer<typeof formSchema>) {
 
   } catch (dbError: any) {
     console.error('CRITICAL: Failed to save application to Firestore:', dbError);
-    return { error: 'Failed to save application. Please try again or contact support.' };
+    // Returning the specific error message to help debug
+    return { error: `Database Error: ${dbError.message || 'Unknown Firestore error'}` };
   }
 
   // Redirect only after successful database write
