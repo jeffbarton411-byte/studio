@@ -113,8 +113,8 @@ export default function DebugPage() {
             </Button>
             <ResultDisplay result={cloudinaryResult} />
           </CardContent>
+          </Card>
         </div>
-      </div>
-    </div>
+      </div>  
   );
 }
