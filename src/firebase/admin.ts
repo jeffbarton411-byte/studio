@@ -1,3 +1,4 @@
+
 import { initializeApp, getApps, getApp, type App } from 'firebase-admin/app';
 import { credential } from 'firebase-admin';
 import { serviceAccount as localServiceAccount } from './service-account';
@@ -8,21 +9,35 @@ export function getFirebaseAdminApp(): App {
     return getApp();
   }
 
-  const serviceAccount = process.env.FIREBASE_SERVICE_ACCOUNT
-    ? JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT)
-    : localServiceAccount;
+  // Determine which service account object to use
+  let serviceAccount = localServiceAccount;
+
+  if (process.env.FIREBASE_SERVICE_ACCOUNT) {
+    try {
+      serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
+    } catch (e) {
+      console.error('Failed to parse FIREBASE_SERVICE_ACCOUNT environment variable:', e);
+    }
+  }
     
   if (!serviceAccount || !serviceAccount.project_id || !serviceAccount.private_key || serviceAccount.private_key.includes("PASTE YOUR NEW PRIVATE KEY HERE")) {
     throw new Error('Firebase Admin SDK service account credentials are not loaded correctly. Ensure FIREBASE_SERVICE_ACCOUNT environment variable is set for production, or update src/firebase/service-account.ts for local development.');
   }
 
-  // Fix for newline characters in private keys which often causes "16 UNAUTHENTICATED"
-  if (serviceAccount.private_key) {
-    serviceAccount.private_key = serviceAccount.private_key.replace(/\\n/g, '\n');
+  // Handle various potential formats of the private key (escaped vs literal newlines)
+  let privateKey = serviceAccount.private_key;
+  if (privateKey && typeof privateKey === 'string') {
+    // If it contains literal '\n' as characters, replace them with actual newlines
+    if (privateKey.includes('\\n')) {
+        privateKey = privateKey.replace(/\\n/g, '\n');
+    }
   }
 
   return initializeApp({
-    credential: credential.cert(serviceAccount),
+    credential: credential.cert({
+        ...serviceAccount,
+        private_key: privateKey
+    }),
     projectId: serviceAccount.project_id
   });
 }
