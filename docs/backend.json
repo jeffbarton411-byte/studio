@@ -1,124 +1,79 @@
 {
   "entities": {
-    "FormSubmission": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "FormSubmission",
+    "Application": {
+      "title": "Application",
+      "description": "Represents a carrier application for drive4mmm.",
       "type": "object",
-      "description": "Represents a single form submission within FormFlow Pro.",
       "properties": {
         "id": {
           "type": "string",
-          "description": "Unique identifier for the FormSubmission entity."
+          "description": "Unique tracking ID (e.g., MMM-123456-ABCD)."
         },
-        "trackingId": {
+        "companyName": {
           "type": "string",
-          "description": "Unique tracking ID assigned to the submission for user tracking."
+          "description": "Dispatch company name."
         },
-        "formData": {
-          "type": "string",
-          "description": "JSON string containing all the form data submitted by the user."
+        "carrierFullName": {
+          "type": "string"
         },
-        "submissionDate": {
-          "type": "string",
-          "description": "Date and time when the form was submitted.",
-          "format": "date-time"
+        "carrierCompanyName": {
+          "type": "string"
         },
-        "status": {
-          "type": "string",
-          "description": "Current status of the form submission (Submitted, In Progress, Completed, Rejected, Deleted).",
-          "format": "string"
+        "mcNumber": {
+          "type": "string"
         },
-        "userId": {
-          "type": "string",
-          "description": "Reference to User. (Relationship: User 1:N FormSubmission)"
-        }
-      },
-      "required": [
-        "id",
-        "trackingId",
-        "formData",
-        "submissionDate",
-        "status",
-        "userId"
-      ]
-    },
-    "User": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "User",
-      "type": "object",
-      "description": "Represents a user of the FormFlow Pro application.",
-      "properties": {
-        "id": {
-          "type": "string",
-          "description": "Unique identifier for the User entity."
+        "dotNumber": {
+          "type": "string"
+        },
+        "phoneNumber": {
+          "type": "string"
         },
         "email": {
           "type": "string",
-          "description": "User's email address.",
           "format": "email"
         },
-        "firstName": {
-          "type": "string",
-          "description": "User's first name."
+        "services": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
         },
-        "lastName": {
+        "paymentMethod": {
+          "type": "string"
+        },
+        "status": {
           "type": "string",
-          "description": "User's last name."
+          "enum": [
+            "Submitted",
+            "In Progress",
+            "Completed",
+            "Rejected",
+            "Deleted"
+          ]
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
         }
       },
       "required": [
         "id",
         "email",
-        "firstName",
-        "lastName"
+        "mcNumber",
+        "dotNumber",
+        "status"
       ]
     }
   },
   "auth": {
     "providers": [
-      "password",
       "anonymous"
     ]
   },
   "firestore": {
-    "structure": [
-      {
-        "path": "/users/{userId}",
-        "definition": {
-          "entityName": "User",
-          "schema": {
-            "$ref": "#/backend/entities/User"
-          },
-          "description": "Stores user profile information.  Path-based ownership ensures only the user can access their own profile.",
-          "params": [
-            {
-              "name": "userId",
-              "description": "The unique identifier for the user."
-            }
-          ]
-        }
-      },
-      {
-        "path": "/users/{userId}/formSubmissions/{formSubmissionId}",
-        "definition": {
-          "entityName": "FormSubmission",
-          "schema": {
-            "$ref": "#/backend/entities/FormSubmission"
-          },
-          "description": "Stores form submission data for each user. The 'userId' field is denormalized here to enforce that each form submission belongs to its parent user, thus ensuring path-based ownership.",
-          "params": [
-            {
-              "name": "userId",
-              "description": "The unique identifier for the user who submitted the form."
-            },
-            {
-              "name": "formSubmissionId",
-              "description": "The unique identifier for the form submission."
-            }
-          ]
-        }
-      }
-    ],
-    "reasoning": "The Firestore structure is designed to store user form submissions and manage them through an admin interface. It prioritizes security, scalability, and ease of debugging. To achieve Authorization Independence, the structure utilizes path-based ownership for private user data and denormalization of access control data. This eliminates the need for `get()` calls in security rules, enabling atomic operations. Structural Segregation ensures that each collection houses documents with uniform security requirements. Form submissions are stored as subcollections under each user, which simplifies ownership-based access control. This design ensures simple, robust, and easily debuggable security rules.\n\nThe structure uses path-based ownership for private user data (form submissions under `/users/{userId}`). The `userId` field within the `/users/{userId}/formSubmissions/{formSubmissionId}` collection enforces that a user can only access form submissions that belong to them, thus enabling secure `list` operations. This avoids the need for complex queries or filters in rules, as the path itself defines the access context (QAPs). Admins will use a separate UI not backed by the database to perform admin functions to the submissions; any admin-performed changes to the submissions are applied using a service account, thus bypassing security rules."
+    "/applications/{applicationId}": {
+      "schema": "#/backend/entities/Application",
+      "description": "Publicly readable applications for the tracking portal and admin panel."
+    }
   }
 }

@@ -1,4 +1,3 @@
-
 import { initializeApp, getApps, getApp, type App } from 'firebase-admin/app';
 import { credential } from 'firebase-admin';
 import { serviceAccount as localServiceAccount } from './service-account';
@@ -17,7 +16,13 @@ export function getFirebaseAdminApp(): App {
     throw new Error('Firebase Admin SDK service account credentials are not loaded correctly. Ensure FIREBASE_SERVICE_ACCOUNT environment variable is set for production, or update src/firebase/service-account.ts for local development.');
   }
 
+  // Fix for newline characters in private keys which often causes "16 UNAUTHENTICATED"
+  if (serviceAccount.private_key) {
+    serviceAccount.private_key = serviceAccount.private_key.replace(/\\n/g, '\n');
+  }
+
   return initializeApp({
     credential: credential.cert(serviceAccount),
+    projectId: serviceAccount.project_id
   });
 }
