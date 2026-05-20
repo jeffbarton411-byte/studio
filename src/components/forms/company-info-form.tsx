@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useForm, type UseFormReturn } from "react-hook-form";
@@ -11,7 +12,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { ArrowRight, Loader2 } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { format } from "date-fns";
@@ -29,9 +30,12 @@ interface CompanyInfoFormProps {
 export default function CompanyInfoForm({ }: CompanyInfoFormProps) {
   const form = useFormContext();
   const [selectedCompany, setSelectedCompany] = useState(form.getValues('companyName') || "");
-  const isPending = form.formState.isSubmitting;
+  const [formattedDate, setFormattedDate] = useState<string>("");
   
-  const today = new Date();
+  useEffect(() => {
+    // Set the date only on the client side to avoid hydration mismatches
+    setFormattedDate(format(new Date(), "yyyy-MM-dd"));
+  }, []);
 
   return (
     <>
@@ -40,13 +44,13 @@ export default function CompanyInfoForm({ }: CompanyInfoFormProps) {
           name="companyName"
           render={({ field }) => (
             <FormItem>
-              <FormLabel className="font-bold">Dispatch Company Name:</FormLabel>
+              <FormLabel className="font-bold text-white">Dispatch Company Name:</FormLabel>
               <Select onValueChange={(value) => {
                 field.onChange(value);
                 setSelectedCompany(value);
               }} defaultValue={field.value}>
                 <FormControl>
-                  <SelectTrigger className="bg-white/5 border-white/10">
+                  <SelectTrigger className="bg-white/5 border-white/10 text-white">
                     <SelectValue placeholder="Select a company" />
                   </SelectTrigger>
                 </FormControl>
@@ -64,7 +68,9 @@ export default function CompanyInfoForm({ }: CompanyInfoFormProps) {
           <div className="space-y-4 rounded-lg bg-white/5 p-6 border border-white/10 glass">
             <h3 className="font-bold text-white">Dispatch/Service Provider Representative</h3>
             <p className="text-sm text-white/90">{selectedCompany}</p>
-            <p className="text-sm text-muted-foreground">Date: {format(today, "yyyy-MM-dd")}</p>
+            {formattedDate && (
+              <p className="text-sm text-muted-foreground">Date: {formattedDate}</p>
+            )}
           </div>
         )}
     </>
